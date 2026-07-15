@@ -1,0 +1,346 @@
+@import "tailwindcss";
+
+/* ============================================================
+   DESIGN TOKENS — Alitas Fogosas · Dark & Fiery
+   ============================================================ */
+@theme {
+  /* Surfaces (near-black, warm undertone) */
+  --color-ink: #0b0705;
+  --color-ink-2: #140b08;
+  --color-surface: #1c110c;
+  --color-surface-2: #241611;
+
+  /* Brand fire */
+  --color-crimson: #e11d2a;
+  --color-crimson-2: #b31119;
+  --color-fire: #ff6a1a;
+  --color-gold: #f7b733;
+  --color-magenta: #ff2e7e;
+
+  /* Text */
+  --color-cream: #fdf3e7;
+  --color-ash: #bda99c;
+  --color-ash-dim: #8f7f74; /* ≥4.5:1 sobre ink — WCAG AA texto pequeño */
+
+  /* Lines */
+  --color-hairline: rgba(255, 255, 255, 0.08);
+
+  /* Fonts */
+  --font-display: "Anton", "Arial Narrow", sans-serif;
+  --font-body: "Outfit", ui-sans-serif, system-ui, sans-serif;
+
+  /* Radius */
+  --radius-xl2: 1.75rem;
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+  }
+  /* Lenis smooth-scroll (momentum) integration */
+  html.lenis, html.lenis body { height: auto; }
+  .lenis.lenis-smooth { scroll-behavior: auto !important; }
+  .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+  .lenis.lenis-stopped { overflow: hidden; }
+  .lenis.lenis-smooth iframe { pointer-events: none; }
+  body {
+    background-color: var(--color-ink);
+    color: var(--color-cream);
+    font-family: var(--font-body);
+    font-synthesis-weight: none;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+    text-size-adjust: 100%;
+  }
+  /* Snappy taps on touch devices (removes 300ms delay); no blue flash */
+  a, button, [role='button'] { touch-action: manipulation; }
+  /* Tailwind v4 preflight sets cursor:default on buttons — restore pointer */
+  button:not(:disabled), [role='button']:not(:disabled) { cursor: pointer; }
+  ::selection {
+    background: var(--color-crimson);
+    color: #fff;
+  }
+  /* Consistent, on-brand focus ring for keyboard users */
+  :focus-visible {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    line-height: 1.12; /* aire entre líneas — evita títulos amontonados */
+    text-transform: uppercase;
+  }
+  /* Custom scrollbar */
+  ::-webkit-scrollbar { width: 11px; height: 11px; }
+  ::-webkit-scrollbar-track { background: var(--color-ink-2); }
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(var(--color-crimson), var(--color-fire));
+    border-radius: 99px;
+    border: 2px solid var(--color-ink-2);
+  }
+}
+
+/* ============================================================
+   UTILITIES / EFFECTS
+   ============================================================ */
+@layer utilities {
+  /* Fiery gradient text */
+  .text-fire-gradient {
+    background: linear-gradient(100deg, #ffd15c 0%, var(--color-gold) 18%, var(--color-fire) 52%, var(--color-crimson) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Section shells — respect notch/safe areas on the sides */
+  .shell {
+    width: 100%;
+    max-width: 80rem;
+    margin-inline: auto;
+    padding-left: max(1.25rem, env(safe-area-inset-left));
+    padding-right: max(1.25rem, env(safe-area-inset-right));
+  }
+  @media (min-width: 768px) {
+    .shell {
+      padding-left: max(2rem, env(safe-area-inset-left));
+      padding-right: max(2rem, env(safe-area-inset-right));
+    }
+  }
+
+  /* Glass card */
+  .glass {
+    background: linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.02));
+    backdrop-filter: blur(14px) saturate(1.1);
+    -webkit-backdrop-filter: blur(14px) saturate(1.1);
+    border: 1px solid var(--color-hairline);
+  }
+
+  /* Glow */
+  .glow-fire { box-shadow: 0 0 0 1px rgba(255,106,26,0.25), 0 18px 60px -18px rgba(255,106,26,0.55); }
+  .glow-crimson { box-shadow: 0 18px 60px -22px rgba(225,29,42,0.7); }
+
+  /* Eyebrow / kicker */
+  .kicker {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-family: var(--font-body);
+    text-transform: uppercase;
+    letter-spacing: 0.28em;
+    font-weight: 700;
+    font-size: 0.72rem;
+    color: var(--color-gold);
+  }
+
+  /* Radial ember backdrop */
+  .ember-bg {
+    background:
+      radial-gradient(60% 50% at 80% 0%, rgba(255,46,126,0.14), transparent 60%),
+      radial-gradient(70% 60% at 12% 8%, rgba(255,106,26,0.16), transparent 55%),
+      radial-gradient(90% 70% at 50% 120%, rgba(225,29,42,0.20), transparent 60%);
+  }
+
+  /* Fine noise/grain overlay */
+  .grain::after {
+    content: "";
+    position: absolute; inset: 0;
+    pointer-events: none;
+    opacity: 0.5;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  }
+
+  /* Hairline top divider used between sections */
+  .edge-top { border-top: 1px solid var(--color-hairline); }
+
+  /* Reveal on scroll — cinematic (blur + lift + micro-scale) */
+  .reveal {
+    opacity: 0;
+    transform: translateY(38px) scale(0.985);
+    filter: blur(12px);
+    transition:
+      opacity 0.9s cubic-bezier(0.19, 1, 0.22, 1),
+      transform 1.05s cubic-bezier(0.19, 1, 0.22, 1),
+      filter 0.9s cubic-bezier(0.19, 1, 0.22, 1);
+    will-change: opacity, transform, filter;
+  }
+  .reveal.in { opacity: 1; transform: none; filter: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; filter: none; transition: none; }
+  }
+  /* Mobile: drop the blur (heavy on phones) for smooth 60fps scrolling */
+  @media (max-width: 640px) {
+    .reveal {
+      filter: none;
+      transform: translateY(28px);
+      transition:
+        opacity 0.6s cubic-bezier(0.19, 1, 0.22, 1),
+        transform 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+  }
+
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Image clip-reveal (dada-projects style): curtain up + slow zoom-out.
+     NOTE: the observed wrapper (.clip-up) stays UNclipped so the
+     IntersectionObserver can measure it; only the child <img> is clipped. */
+  .clip-up { overflow: hidden; }
+  .clip-up > img {
+    clip-path: inset(100% 0 0 0);
+    transform: scale(1.22);
+    transition:
+      clip-path 1.15s cubic-bezier(0.19, 1, 0.22, 1),
+      transform 1.5s cubic-bezier(0.19, 1, 0.22, 1);
+    transition-delay: var(--rd, 0ms);
+    will-change: clip-path, transform;
+  }
+  .clip-up.in > img { clip-path: inset(0 0 0 0); transform: scale(1); }
+  @media (prefers-reduced-motion: reduce) {
+    .clip-up > img { clip-path: none; transform: none; transition: none; }
+  }
+}
+
+/* ── Fueguitos del medidor de picor: se ILUMINAN como flamas reales ─────
+   Degradado de fuego en el SVG (núcleo amarillo → matiz → punta), halo de
+   luz que pulsa detrás (::before) y baile orgánico de llama desde la base.
+   --fg = RGB del glow · --spd = ritmo (la roja baila más rápido). */
+.flame {
+  position: relative;
+  display: inline-flex;
+  transform-origin: 50% 88%; /* la llama se mece anclada a su base */
+}
+.flame.lit { opacity: 0; transform: scale(0.3); }
+.flame.lit > svg { position: relative; z-index: 1; }
+/* Halo de luz de la flama */
+.flame.lit::before {
+  content: '';
+  position: absolute;
+  inset: -45%;
+  border-radius: 999px;
+  background: radial-gradient(circle at 50% 62%, rgba(var(--fg), 0.65), rgba(var(--fg), 0.18) 45%, transparent 70%);
+  opacity: 0;
+}
+.reveal.in .flame.lit {
+  animation:
+    igniteFlame 0.65s cubic-bezier(0.22, 1, 0.36, 1) var(--fd, 0s) forwards,
+    flameDance var(--spd, 2s) ease-in-out calc(var(--fd, 0s) + 0.75s) infinite;
+}
+.reveal.in .flame.lit::before {
+  animation: flameHalo calc(var(--spd, 2s) * 0.85) ease-in-out calc(var(--fd, 0s) + 0.75s) infinite alternate;
+}
+@keyframes igniteFlame {
+  0%   { opacity: 0; transform: scale(0.15) translateY(6px); }
+  55%  { opacity: 1; transform: scale(1.6) translateY(-2px); filter: drop-shadow(0 0 12px rgba(var(--fg, 255, 122, 26), 1)); }
+  100% { opacity: 1; transform: scale(1); filter: none; }
+}
+/* Baile de llama: se estira, se encoge y se mece — nunca simétrico */
+@keyframes flameDance {
+  0%, 100% { transform: scaleY(1) scaleX(1) rotate(0deg); }
+  22%      { transform: scaleY(1.16) scaleX(0.92) rotate(-3deg); }
+  48%      { transform: scaleY(0.93) scaleX(1.07) rotate(2deg); }
+  74%      { transform: scaleY(1.1) scaleX(0.95) rotate(-1.5deg) translateY(-0.5px); }
+}
+@keyframes flameHalo {
+  from { opacity: 0.4; transform: scale(0.8); }
+  to   { opacity: 1;   transform: scale(1.3); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flame.lit, .reveal.in .flame.lit { opacity: 1; transform: none; animation: none; filter: none; }
+  .flame.lit::before, .reveal.in .flame.lit::before { opacity: 0.55; animation: none; }
+}
+
+/* Swatch gloseado con el color de cada salsa */
+.swatch {
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.85), transparent 45%),
+    radial-gradient(circle at 50% 58%, var(--sc) 42%, color-mix(in srgb, var(--sc) 55%, #000) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 3px 12px -3px var(--sc);
+}
+
+/* Floating ember particles */
+@keyframes emberFloat {
+  0%   { transform: translateY(0) translateX(0) scale(1); opacity: 0; }
+  10%  { opacity: 0.9; }
+  90%  { opacity: 0.7; }
+  100% { transform: translateY(-120px) translateX(var(--drift, 14px)) scale(0.4); opacity: 0; }
+}
+.ember {
+  position: absolute;
+  bottom: -8px;
+  width: 5px; height: 5px;
+  border-radius: 99px;
+  background: radial-gradient(circle, #ffd15c, var(--color-fire) 55%, transparent 72%);
+  animation: emberFloat var(--dur, 6s) linear infinite;
+  animation-delay: var(--delay, 0s);
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) { .ember { display: none; } }
+
+/* Marquee */
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.marquee-track { animation: marquee var(--speed, 30s) linear infinite; }
+@media (prefers-reduced-motion: reduce) { .marquee-track { animation: none; } }
+
+/* Page-load entrance — everything in the first view POPS in on load */
+@keyframes loadIn {
+  0%   { opacity: 0; transform: scale(0.5) translateY(28px); }
+  55%  { opacity: 1; transform: scale(1.09) translateY(-3px); }
+  78%  { transform: scale(0.97); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.load-in {
+  opacity: 0;
+  animation: loadIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: var(--ld, 0s);
+  will-change: opacity, transform;
+}
+@keyframes loadDown {
+  from { opacity: 0; transform: translateY(-100%); }
+  to   { opacity: 1; transform: none; }
+}
+.load-down { animation: loadDown 0.8s cubic-bezier(0.19, 1, 0.22, 1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .load-in { opacity: 1; animation: none; }
+  .load-down { animation: none; }
+}
+
+/* Hero line-by-line POP (each line springs in from the left) */
+@keyframes linePop {
+  0%   { opacity: 0; transform: scale(0.55) translateY(22px); }
+  55%  { opacity: 1; transform: scale(1.07) translateY(-2px); }
+  78%  { transform: scale(0.98); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.line-mask { display: block; }
+.line-in {
+  display: block;
+  transform-origin: center bottom; /* móvil: título centrado, pop desde el centro */
+  opacity: 0;
+  transform: scale(0.55) translateY(22px);
+  animation: linePop 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: var(--d, 0s);
+  will-change: opacity, transform;
+}
+@media (min-width: 768px) {
+  .line-in { transform-origin: left center; } /* desktop: alineado a la izquierda */
+}
+@media (prefers-reduced-motion: reduce) {
+  .line-in { animation: none; transform: none; opacity: 1; }
+}
+
+/* Slow pulse for glow accents */
+@keyframes softPulse { 0%,100% { opacity: 0.55; } 50% { opacity: 1; } }
+.pulse-slow { animation: softPulse 4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .pulse-slow { animation: none; } }
