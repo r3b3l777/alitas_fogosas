@@ -30,26 +30,31 @@ export const business = {
 }
 
 // ─── SUCURSALES ─────────────────────────────────────────────────────────────
-// Datos tomados de fuentes públicas (Uber Eats / directorios). ⚠️ Verifica
-// direcciones y teléfonos exactos con el negocio antes de publicar.
+// Direcciones verificadas desde los links oficiales de Google Maps
+// publicados en el perfil de Instagram @alitas_fogosas.
 export const branches = [
   {
-    name: 'Sucursal La Magdalena',
-    address: 'Calle Ignacio Allende 301, Barrio La Magdalena',
+    name: 'Sucursal Buenavista',
+    address: 'Calle Ignacio Allende 301, esq. Av. Buenavista, Barrio La Magdalena',
     city: 'San Mateo Atenco, Edo. Méx. · C.P. 52104',
     phone: '729 142 9080',
-    mapsUrl:
-      'https://www.google.com/maps/search/?api=1&query=Alitas+Fogosas+Ignacio+Allende+301+San+Mateo+Atenco',
+    mapsUrl: 'https://g.co/kgs/syb16N',
     uberEats: 'https://www.ubereats.com/mx/store/alitas-fogosas/ifZjL4cxQIWiXj1mYawFwg',
   },
   {
     name: 'Sucursal Av. Lerma',
-    address: 'Av. Lerma, Col. Santa María',
+    address: 'Av. Lerma 102, Col. Santa María San Isidro',
     city: 'San Mateo Atenco, Edo. Méx. · C.P. 52105',
     phone: '729 142 9080',
-    mapsUrl:
-      'https://www.google.com/maps/search/?api=1&query=Alitas+Fogosas+Lerma+San+Mateo+Atenco',
+    mapsUrl: 'https://maps.app.goo.gl/cPQLwgNNZXotw2zt9',
     uberEats: 'https://www.ubereats.com/mx/store/alitas-fogosas-lerma/ZOCTpNqXUi6xqM61Lp0Qqg',
+  },
+  {
+    name: 'Sucursal Sauces Metepec',
+    address: 'Cto. Metropolitano Exterior 2028-Ote',
+    city: 'Metepec, Edo. Méx. · C.P. 52176',
+    phone: '729 142 9080',
+    mapsUrl: 'https://maps.app.goo.gl/PnNmn2YymdVyAbs78',
   },
 ]
 
