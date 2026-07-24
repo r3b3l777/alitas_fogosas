@@ -55,6 +55,7 @@ export const branches = [
     city: 'Metepec, Edo. Méx. · C.P. 52176',
     phone: '729 142 9080',
     mapsUrl: 'https://maps.app.goo.gl/PnNmn2YymdVyAbs78',
+    uberEats: 'https://www.ubereats.com/mx/store/alitas-fogosas-sauces-metepec/Oy_gGubhVISKkZCq4ImITQ',
   },
 ]
 
