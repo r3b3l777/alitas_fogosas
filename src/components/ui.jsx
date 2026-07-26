@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import Lenis from 'lenis'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 /* ── Smooth momentum scroll (Ducati-style) + animated anchor jumps ─────── */
 let _lenis = null
@@ -19,6 +20,9 @@ export function useSmoothScroll() {
       touchMultiplier: 1.7,
     })
     _lenis = lenis
+    // Lenis manda el scroll: sin este puente, los ScrollTrigger del hero 3D
+    // se quedan un frame atrás y el recorrido de cámara se ve a saltos.
+    lenis.on('scroll', ScrollTrigger.update)
     let raf = 0
     const loop = (t) => { lenis.raf(t); raf = requestAnimationFrame(loop) }
     raf = requestAnimationFrame(loop)
@@ -346,6 +350,12 @@ export const Icon = {
   Menu: ({ className = '' }) => (
     <svg viewBox="0 0 24 24" className={className} {...S}>
       <path d="M4 7h16M4 12h16M4 17h16" />
+    </svg>
+  ),
+  Bag: ({ className = '' }) => (
+    <svg viewBox="0 0 24 24" className={className} {...S}>
+      <path d="M5 8h14l-1.1 11.1a2 2 0 0 1-2 1.9H8.1a2 2 0 0 1-2-1.9L5 8z" />
+      <path d="M9 8V6.5a3 3 0 0 1 6 0V8" />
     </svg>
   ),
   Close: ({ className = '' }) => (

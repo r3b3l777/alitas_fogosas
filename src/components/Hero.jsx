@@ -1,5 +1,5 @@
 import { Embers, Icon, useParallax } from './ui'
-import { business, img, waLink } from '../data'
+import { business, img } from '../data'
 
 export default function Hero() {
   const imgRef = useParallax(0.1)
@@ -35,20 +35,19 @@ export default function Hero() {
           </p>
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3 load-in md:justify-start" style={{ '--ld': '0.56s' }}>
-            <a
-              href={waLink()}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-crimson to-fire px-7 py-4 text-base font-bold text-white glow-crimson transition-transform duration-200 hover:scale-[1.04] active:scale-95"
-            >
-              <Icon.Whatsapp className="h-5 w-5" />
-              Ordena por WhatsApp
-            </a>
+            {/* CTA principal: el pedido se arma aquí mismo, sin salir a WhatsApp */}
             <a
               href="#menu"
+              className="group inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-crimson to-fire px-7 py-4 text-base font-bold text-white glow-crimson transition-transform duration-200 hover:scale-[1.04] active:scale-95"
+            >
+              <Icon.Bag className="h-5 w-5" />
+              Arma tu pedido
+            </a>
+            <a
+              href="#salsas"
               className="inline-flex items-center gap-2 rounded-full border border-hairline bg-white/5 px-7 py-4 text-base font-semibold text-cream backdrop-blur transition-colors hover:bg-white/10"
             >
-              Ver el menú
+              Ver las salsas
               <Icon.Arrow className="h-4 w-4 text-fire" />
             </a>
           </div>
@@ -84,7 +83,7 @@ export default function Hero() {
             {/* rating chip */}
             <div className="absolute right-4 top-4 glass flex items-center gap-2 rounded-full px-3.5 py-2 shadow-lg">
               <Icon.Flame className="h-4 w-4 text-fire" filled />
-              <span className="text-sm font-bold text-cream">9 salsas</span>
+              <span className="text-sm font-bold text-cream">11 salsas</span>
             </div>
           </div>
         </div>

@@ -1,0 +1,501 @@
+/* ============================================================
+   HORIZON HERO — Alitas Fogosas
+   Intro cinematográfica: brasas, humo y bloom sobre el asador.
+   Portado del componente "Horizon Hero Section" (21st.dev) y
+   re-tematizado a los tokens de la marca.
+   ============================================================ */
+
+.hero-container {
+  --hz-bg: #100805;
+  --hz-text: #fdf3e7;
+  --hz-muted: #c9b8ab;
+  --hz-faint: #8f7f74;  /* AA: 5.85:1 */
+  --hz-red: #e11d2a;
+  --hz-red-text: #f7b733; /* rojo legible en texto chico */
+  --hz-red-hot: #ff6a1a;
+  --hz-line: rgba(255, 255, 255, 0.09);
+
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+  background: var(--hz-bg);
+  color: var(--hz-text);
+  font-family: var(--font-body), system-ui, sans-serif;
+}
+
+/* --- Lienzo anclado: sticky, no fixed, para no tapar el resto del sitio --- */
+.hero-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  width: 100%;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.hero-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Sin WebGL: fondo de respaldo con el mismo lenguaje visual (brasas + ring) */
+.hero-container.no-webgl .hero-sticky {
+  background:
+    radial-gradient(60% 40% at 50% 100%, rgba(255, 90, 31, 0.28), transparent 70%),
+    radial-gradient(90% 60% at 50% 78%, rgba(225, 29, 42, 0.3), transparent 68%),
+    linear-gradient(180deg, #08080a 0%, #12080a 62%, #1d0b0c 100%);
+}
+.hero-container.no-webgl .hero-canvas {
+  display: none;
+}
+
+/* Viñeta + calor en el piso del ring */
+.hero-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 70% at 50% 108%, rgba(247, 183, 51, 0.22), transparent 60%),
+    radial-gradient(90% 60% at 50% 10%, rgba(255, 106, 26, 0.14), transparent 66%),
+    radial-gradient(100% 100% at 50% 50%, transparent 42%, rgba(8, 4, 2, 0.78) 100%);
+}
+
+/* --- Contenido --- */
+.hero-content {
+  position: relative;
+  z-index: 2;
+  /* Se superpone al lienzo sticky que ocupa la primera pantalla. */
+  margin-top: -100vh;
+  margin-top: -100svh;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  /* Deja aire para el nav fijo del sitio y para el notch. */
+  padding: calc(96px + env(safe-area-inset-top)) 22px 96px;
+}
+
+.hero-eyebrow {
+  font-family: var(--font-body), sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  font-size: clamp(0.62rem, 1.4vw, 0.78rem);
+  font-weight: 600;
+  color: var(--hz-red-text);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: clamp(14px, 3vw, 26px);
+  opacity: 0;
+}
+
+.hero-eyebrow::before,
+.hero-eyebrow::after {
+  content: '';
+  width: clamp(16px, 6vw, 54px);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--hz-red));
+}
+.hero-eyebrow::after {
+  background: linear-gradient(90deg, var(--hz-red), transparent);
+}
+
+.hero-title {
+  font-family: var(--font-display), Impact, sans-serif;
+  font-weight: 400;
+  text-transform: uppercase;
+  font-size: clamp(3rem, 15vw, 11rem);
+  line-height: 0.88;
+  letter-spacing: -0.015em;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: 0 clamp(0.14em, 1.2vw, 0.28em);
+  text-shadow: 0 0 60px rgba(225, 29, 42, 0.28);
+}
+
+.hero-title .title-word {
+  display: inline-flex;
+}
+
+/* El VS en rojo, con destello detrás (identidad del sitio) */
+.hero-title .title-word--accent {
+  position: relative;
+  color: var(--hz-red-text);
+}
+.hero-title .title-word--accent::after {
+  content: '';
+  position: absolute;
+  inset: -30% -40%;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(225, 29, 42, 0.5), transparent 68%);
+  filter: blur(6px);
+}
+
+.hero-title .title-char {
+  display: inline-block;
+  /* will-change lo pone GSAP mientras dura la animación y lo retira después:
+     dejarlo fijo aquí mantendría una capa de composición viva para siempre. */
+}
+
+.hero-subtitle {
+  margin-top: clamp(18px, 4vw, 32px);
+  max-width: 60ch;
+}
+
+.subtitle-line {
+  font-family: var(--font-body), sans-serif;
+  font-size: clamp(0.95rem, 2.1vw, 1.3rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--hz-muted);
+  line-height: 1.55;
+  opacity: 0;
+}
+.subtitle-line.is-static {
+  opacity: 1;
+}
+
+/* Salvavidas: pase lo que pase con la animación, el contenido se ve. */
+.hero-content.shown .hero-eyebrow,
+.hero-content.shown .subtitle-line,
+.hero-content.shown .hero-actions,
+.hero-content.shown .hero-fine,
+.hero-content.shown .hero-stats,
+.hero-content.shown .scroll-hint {
+  opacity: 1;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-top: clamp(24px, 5vw, 40px);
+  opacity: 0;
+}
+
+.hero-btn {
+  font-family: var(--font-body), sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-weight: 600;
+  font-size: 0.92rem;
+  padding: 15px 28px;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  cursor: pointer;
+  /* Objetivo táctil cómodo en móvil */
+  min-height: 48px;
+  /* El hover es respuesta directa al puntero: 200 ms se siente inmediato.
+     A 450 ms el botón parecía ir por detrás del cursor. */
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hero-btn--primary {
+  background: linear-gradient(90deg, var(--hz-red), var(--hz-red-hot));
+  color: #fff;
+  border: 1px solid var(--hz-red-hot);
+  box-shadow: 0 14px 40px -12px rgba(225, 29, 42, 0.75);
+}
+.hero-btn--primary:hover {
+  background: var(--hz-red-hot);
+  transform: translateY(-2px);
+  box-shadow: 0 20px 52px -12px rgba(255, 106, 26, 0.9);
+}
+
+.hero-btn--ghost {
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--hz-text);
+  border: 1px solid var(--hz-line);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.hero-btn--ghost:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.hero-btn:active {
+  transform: translateY(-1px) scale(0.97);
+}
+
+.hero-fine {
+  margin-top: clamp(16px, 3vw, 22px);
+  font-size: 0.92rem;
+  color: var(--hz-muted);
+  opacity: 0;
+}
+.hero-fine strong {
+  color: var(--hz-text);
+}
+
+/* --- Stats del ring --- */
+.hero-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(16px, 5vw, 44px);
+  margin-top: clamp(26px, 5vw, 42px);
+  opacity: 0;
+}
+
+.hero-stat {
+  text-align: center;
+  min-width: 68px;
+}
+
+.hero-stat__value {
+  font-family: 'Anton', sans-serif;
+  font-size: clamp(1.25rem, 3.4vw, 1.9rem);
+  line-height: 1;
+  color: var(--hz-text);
+}
+
+.hero-stat__label {
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--hz-faint);
+  margin-top: 6px;
+}
+
+.hero-stat__divider {
+  width: 1px;
+  height: 28px;
+  background: var(--hz-line);
+}
+
+/* --- Progreso de scroll --- */
+.scroll-progress-container {
+  position: fixed;
+  right: clamp(16px, 3vw, 38px);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 12;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  pointer-events: none;
+}
+
+.scroll-text {
+  font-family: var(--font-body), sans-serif;
+  writing-mode: vertical-rl;
+  text-transform: uppercase;
+  letter-spacing: 0.32em;
+  font-size: 0.64rem;
+  color: var(--hz-faint);
+}
+
+.progress-track {
+  width: 2px;
+  height: clamp(90px, 20vh, 180px);
+  background: var(--hz-line);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  width: 100%;
+  height: 0%;
+  background: linear-gradient(180deg, var(--hz-red-hot), var(--hz-red));
+  box-shadow: 0 0 14px rgba(255, 106, 26, 0.85);
+}
+
+.section-counter {
+  font-family: 'Anton', sans-serif;
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  color: var(--hz-text);
+}
+
+/* --- Indicador de scroll --- */
+.scroll-hint {
+  margin-top: clamp(24px, 5vw, 40px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--hz-faint);
+  font-family: var(--font-body), sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.26em;
+  font-size: 0.64rem;
+  opacity: 0;
+}
+
+/* El chevron cae una sola vez al aparecer y se queda quieto: un loop infinito
+   pide atención permanentemente y envejece mal. */
+.scroll-hint__bell {
+  animation: hz-drop 0.7s cubic-bezier(0.16, 1, 0.3, 1) 3 both;
+}
+
+@keyframes hz-drop {
+  0% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(5px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+/* --- Secciones de scroll --- */
+.scroll-sections {
+  position: relative;
+  z-index: 2;
+}
+
+.content-section {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 90px 22px;
+}
+
+.content-section .hero-title {
+  font-size: clamp(2.5rem, 12vw, 9rem);
+}
+
+.section-round {
+  font-family: var(--font-body), sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  font-size: clamp(0.62rem, 1.4vw, 0.76rem);
+  font-weight: 600;
+  color: var(--hz-red-text);
+  margin-bottom: clamp(14px, 2.6vw, 22px);
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 900px) {
+  .scroll-progress-container {
+    /* En móvil compite con el WhatsApp flotante y el menú: fuera. */
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .hero-content {
+    padding: calc(88px + env(safe-area-inset-top)) 18px 72px;
+  }
+  .hero-title {
+    /* "YOU VS YOU" cabe en dos líneas sin partir palabras */
+    font-size: clamp(2.9rem, 19vw, 5rem);
+    gap: 0 0.16em;
+  }
+  .hero-subtitle {
+    max-width: 34ch;
+  }
+  .subtitle-line {
+    letter-spacing: 0.08em;
+    font-size: 0.92rem;
+  }
+  .hero-actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .hero-btn {
+    width: 100%;
+  }
+  .hero-fine {
+    font-size: 0.85rem;
+    max-width: 34ch;
+  }
+  .hero-stat__divider {
+    height: 22px;
+  }
+  .hero-stat__label {
+    letter-spacing: 0.14em;
+    font-size: 0.6rem;
+  }
+  .content-section {
+    padding: 80px 18px;
+  }
+  .content-section .hero-title {
+    font-size: clamp(2.4rem, 15vw, 4.4rem);
+  }
+}
+
+/* Móvil apaisado / pantallas bajas: que no se corte el contenido */
+@media (max-height: 620px) {
+  .hero-content {
+    justify-content: flex-start;
+    padding-top: calc(84px + env(safe-area-inset-top));
+  }
+  .hero-stats,
+  .scroll-hint {
+    display: none;
+  }
+}
+
+/* --- Accesibilidad --- */
+@media (prefers-reduced-motion: reduce) {
+  .scroll-hint__bell {
+    animation: none;
+  }
+  .hero-btn {
+    transition: none;
+  }
+}
+
+/* ============================================================
+   CENTRADO
+   Este sitio no tiene rail lateral (el componente original sí),
+   así que el padding va simétrico y todo queda centrado de verdad.
+   ============================================================ */
+.hero-container { --hz-gutter: 22px; }
+
+.hero-content,
+.content-section {
+  padding-left: var(--hz-gutter);
+  padding-right: var(--hz-gutter);
+  /* Respeta el notch en horizontal sin descentrar el bloque. */
+  padding-left: max(var(--hz-gutter), env(safe-area-inset-left));
+  padding-right: max(var(--hz-gutter), env(safe-area-inset-right));
+}
+
+.hero-content > *,
+.content-section > * {
+  margin-inline: auto;
+}
+
+@media (max-width: 640px) {
+  .hero-container { --hz-gutter: 18px; }
+  .content-section .hero-subtitle {
+    max-width: 30ch;
+    margin-inline: auto;
+  }
+}

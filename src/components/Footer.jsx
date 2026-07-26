@@ -10,7 +10,7 @@ const nav = [
 
 export default function Footer() {
   return (
-    <footer className="edge-top bg-ink">
+    <footer className="edge-top relative z-10">
       <div className="shell py-14">
         <div className="flex flex-col gap-10 md:flex-row md:justify-between">
           <div className="max-w-sm">
@@ -84,9 +84,18 @@ export default function Footer() {
 
         <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-hairline pt-6 text-sm text-ash-dim sm:flex-row">
           <p>© {new Date().getFullYear()} {business.name}. Todos los derechos reservados.</p>
-          <div className="flex gap-5">
+          <div className="flex items-center gap-5">
             <a href="#" className="transition-colors hover:text-ash">Términos y Condiciones</a>
             <a href="#" className="transition-colors hover:text-ash">Aviso de Privacidad</a>
+            {/* Entrada al panel del personal: a la vista pero apagada, para que
+                el cliente no la registre y el empleado no memorice la URL. */}
+            <a
+              href="#empleados"
+              title="Acceso del personal"
+              className="text-ash-dim/45 transition-colors hover:text-ash"
+            >
+              · Personal
+            </a>
           </div>
         </div>
       </div>

@@ -7,7 +7,7 @@ export default function Sauces() {
       <div aria-hidden className="pointer-events-none absolute right-0 top-1/3 h-72 w-72 rounded-full bg-magenta/10 blur-[100px]" />
       <div className="shell relative">
         <Reveal className="mx-auto mb-12 max-w-2xl text-center">
-          <p className="kicker justify-center">9 salsas de la casa</p>
+          <p className="kicker justify-center">11 salsas de la casa</p>
           <h2 className="mt-4 text-[clamp(2.25rem,6vw,4rem)] text-cream">
             Elige tu nivel de <span className="text-fire-gradient">fuego</span>
           </h2>

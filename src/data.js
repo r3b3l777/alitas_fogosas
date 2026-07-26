@@ -34,6 +34,7 @@ export const business = {
 // publicados en el perfil de Instagram @alitas_fogosas.
 export const branches = [
   {
+    slug: 'buenavista',
     name: 'Sucursal Buenavista',
     address: 'Calle Ignacio Allende 301, esq. Av. Buenavista, Barrio La Magdalena',
     city: 'San Mateo Atenco, Edo. Méx. · C.P. 52104',
@@ -42,6 +43,7 @@ export const branches = [
     uberEats: 'https://www.ubereats.com/mx/store/alitas-fogosas/ifZjL4cxQIWiXj1mYawFwg',
   },
   {
+    slug: 'lerma',
     name: 'Sucursal Av. Lerma',
     address: 'Av. Lerma 102, Col. Santa María San Isidro',
     city: 'San Mateo Atenco, Edo. Méx. · C.P. 52105',
@@ -50,6 +52,7 @@ export const branches = [
     uberEats: 'https://www.ubereats.com/mx/store/alitas-fogosas-lerma/ZOCTpNqXUi6xqM61Lp0Qqg',
   },
   {
+    slug: 'sauces',
     name: 'Sucursal Sauces Metepec',
     address: 'Cto. Metropolitano Exterior 2028-Ote',
     city: 'Metepec, Edo. Méx. · C.P. 52176',
@@ -104,100 +107,195 @@ export const categories = [
   },
 ]
 
-// ─── MENÚ OFICIAL (precios reales de los tableros de alitasfogosas.com/menu) ─
+// ─── MENÚ OFICIAL ───────────────────────────────────────────────────────────
+// Transcrito del menú oficial en PDF entregado por el cliente (jul 2026).
+// Las bebidas con varias presentaciones traen el desglose completo en `desc`
+// y en `price` el precio de entrada (la presentación más chica disponible).
+// S/A = sin alcohol · C/A = con alcohol.
 export const menu = [
   {
     id: 'alitas',
-    name: 'Alitas de la Casa',
+    name: 'Alitas',
     tag: 'La estrella',
-    note: 'Se sirven con vegetales frescos y dip de aderezo. Paquete con cerveza: 355 ml.',
+    sauces: true, // al agregar al carrito se piden salsas
+    note: 'Se sirven con vegetales frescos y dip de aderezo (tamaño según la orden). Las cervezas de estos paquetes están marcadas en el menú y no incluyen marcas premium.',
     items: [
-      { name: '6 piezas', desc: 'Una salsa a elegir', price: 95 },
-      { name: '10 piezas', desc: 'Dos salsas a elegir', price: 149 },
-      { name: '15 piezas', desc: 'Tres salsas a elegir', price: 229 },
-      { name: '20 piezas', desc: 'Tres salsas a elegir', price: 329 },
-      { name: '30 piezas', desc: 'Cuatro salsas · para la banda', price: 410, star: true },
-      { name: 'Paquete + cerveza', desc: '6 pzs + 1 cerveza $159 · hasta 30 pzs + 3 cervezas $489', price: 159 },
+      { name: '324 grs.', desc: '+1 cerveza $169', price: 105 },
+      { name: '514 grs.', desc: '+1 cerveza $199', price: 155 },
+      { name: '832 grs.', desc: '+2 cervezas $299', price: 209 },
+      { name: '1,212 grs.', desc: '+2 cervezas $429', price: 279 },
+      { name: '1,636 grs.', desc: '+3 cervezas $519', price: 379 },
+      { name: '2,442 grs.', desc: '+3 cervezas $749 · para la banda', price: 599, star: true },
     ],
   },
   {
     id: 'boneless',
-    name: 'Boneless Fogosos',
-    tag: 'Carnosas',
-    note: 'Pechuga de pollo empanizada y dorada. 8 piezas ≈ 220 g de proteína.',
+    name: 'Boneless',
+    tag: 'Sin hueso',
+    sauces: true,
+    note: 'Se sirven con vegetales frescos y dip de aderezo (tamaño según la orden). Las cervezas de estos paquetes están marcadas en el menú y no incluyen marcas premium.',
     items: [
-      { name: '8 piezas', desc: 'Una salsa a elegir', price: 105 },
-      { name: '15 piezas', desc: 'Dos salsas a elegir', price: 190 },
-      { name: '20 piezas', desc: 'Tres salsas a elegir', price: 275 },
-      { name: '30 piezas', desc: 'Tres salsas · ideal para compartir', price: 389, star: true },
-      { name: 'Paquete + cerveza', desc: '8 pzs + 1 cerveza $149 · hasta 30 pzs + 3 cervezas $470', price: 149 },
+      { name: '282 grs.', desc: '+1 cerveza $169', price: 129 },
+      { name: '554 grs.', desc: '+2 cervezas $289', price: 189 },
+      { name: '662 grs.', desc: '+2 cervezas $385', price: 285 },
+      { name: '996 grs.', desc: '+3 cervezas $579 · ideal para compartir', price: 419, star: true },
+    ],
+  },
+  {
+    id: 'pizzas',
+    name: 'Pizzas',
+    tag: 'Solo Sauces Metepec',
+    onlyBranch: 'sauces', // no se preparan en las otras dos
+    note: 'Disponibles únicamente en la Sucursal Sauces Metepec. Todas nuestras pizzas tienen un tamaño de 35 cm. Agrega orilla rellena de queso a cualquiera por solo $65.',
+    items: [
+      { name: 'Pepperoni', desc: 'La más pedida. La infalible: capas de pepperoni dorado sobre queso fundido y salsa de tomate', price: 159, star: true },
+      { name: 'Margarita', desc: 'La clásica italiana: salsa de tomate, mozzarella y albahaca fresca, simple y perfecta', price: 179 },
+      { name: 'Hawaiana', desc: 'El balance perfecto entre dulce y salado: jamón y piña sobre una base de queso fundido', price: 199 },
+      { name: 'Pizza Fogosa de la Semana', desc: 'Recetas que cambian, sabores que sorprenden. Pregunta a tu mesero por la fogosa disponible', price: 199 },
+      { name: 'La Mexa', desc: 'Sabor intenso y picosito: chorizo, jamón, cebolla y chile que le dan ese toque bien mexicano', price: 219 },
+      { name: 'Y la Queso', desc: 'Para los amantes del queso: mezcla cremosa de mozzarella, parmesano, provolone y queso azul', price: 239 },
+      { name: 'Miss Metepec', desc: 'La que le gusta a todos: combinación de pepperoni, arrachera, chile morrón y champiñones', price: 259 },
+      { name: 'Messi contra Ronaldo', desc: 'El clásico dividido: mitad chorizo argentino, mitad salami portugués. Tú decides el ganador', price: 259 },
+      { name: 'La Traficante', desc: 'Potente y sin filtros: arrachera, tocino, chorizo argentino y lomo ahumado, con orilla rellena de queso', price: 329 },
     ],
   },
   {
     id: 'burgers',
-    name: 'Burgers',
-    tag: 'Burgerman',
-    note: 'Incluyen camita de papas, jitomate, cebolla y lechuga fresca.',
+    name: 'Burguers',
+    tag: 'Para paladares exigentes',
+    note: 'Incluye una ración de papas, jitomate, cebolla y lechuga fresca.',
     items: [
-      { name: 'La Hawaiana', desc: 'Jamón de pavo y piña asada, queso Gouda, tocino estilo polaco, cebolla caramelizada y honey mustard', price: 159 },
-      { name: 'La Fogostina', desc: 'La más pedida: doble carne en pan brioche, cheddar derretido, mermelada de tocino y aderezo de la casa', price: 199, star: true },
-    ],
-  },
-  {
-    id: 'costillas',
-    name: 'Costillas',
-    tag: 'Baby back ribs',
-    note: 'Incluyen papas a la francesa con extra queso y tocino. Pídelas con cualquiera de nuestras salsas.',
-    items: [
-      { name: 'Tira de Ribs', desc: '260 g bañados en BBQ, doble pasada por el horno. Porción individual: ¡prohibido compartir!', price: 159 },
-      { name: 'Jenga de Costillas', desc: 'Un kilo de baby back ribs. Placer para compartir entre familia y amigos', price: 429, star: true },
-    ],
-  },
-  {
-    id: 'conos',
-    name: 'Conos',
-    tag: 'Papas al full',
-    note: 'Papas de 250 g con extra queso y tocino.',
-    items: [
-      { name: 'Sencillo', desc: 'Papas al full, tocino y un chingo de queso', price: 75 },
-      { name: 'Doble', desc: 'Papas + boneless', price: 155 },
-      { name: 'Triple', desc: 'Boneless + papas', price: 199 },
-      { name: 'Cono Fogoso', desc: 'El más completo de la casa', price: 219, star: true },
+      { name: 'La Hawaiana', desc: 'Nuestra niña consentida: burguer con jamón de pavo y piña asada, cubiertos de queso gouda y tocino estilo polaco, cebolla caramelizada y aderezo honey mustard especial de la casa', price: 185 },
+      { name: 'La Fogostina', desc: 'La más pedida. Burguer al sartén con doble carne en pan brioche, queso cheddar derretido, mermelada de tocino, cebolla caramelizada y aderezo especial', price: 235, star: true },
     ],
   },
   {
     id: 'jochos',
     name: 'Jochos',
     tag: 'Metrodogs',
-    note: 'Un cuarto de libra de salchicha de res premium. Incluyen papas, jalapeño y salsa secreta de la casa.',
+    note: 'Incluye una ración de papas, rodajas de chile jalapeño y salsa receta secreta de la casa.',
     items: [
-      { name: 'Metrodog Estilo Nathans', desc: 'Tocino holandés, queso cheddar, chili y crujientes de papa spice. Como si estuvieras en New York', price: 109 },
-      { name: 'Metrodog Bellagio', desc: 'Tocino holandés, cheddar derretido y cebolla caramelizada. Estilo Las Vegas', price: 109 },
-      { name: 'Metrodog Estilo Mexa', desc: 'Chorizo doradito y sábana de queso Oaxaca. El favorito del Norte', price: 109, star: true },
+      { name: 'Metrodog Bellagio', desc: 'Como si estuvieras en Las Vegas. Salchicha con trocitos de tocino estilo holandés, bañada en queso cheddar derretido calientito y cebolla caramelizada', price: 135 },
+      { name: 'Metrodog Estilo Mexa', desc: 'El favorito del Norte. Salchicha envuelta con tocino estilo holandés, acompañada de chorizo doradito y una sábana de queso cheddar bien derretido', price: 149 },
+      { name: 'Metrodog Estilo Nathan’s', desc: 'El más pedido. Como si estuvieras en New York: salchicha abrazada con tocino estilo holandés, bañada de queso cheddar, acompañada con chili y crujientes de papa spice', price: 159, star: true },
     ],
   },
   {
-    id: 'infantil',
-    name: 'Menú Infantil',
-    tag: 'Para los peques',
-    note: 'Incluye regalo sorpresa.',
+    id: 'ribs',
+    name: 'Ribs',
+    tag: 'Baby back ribs',
+    note: 'Incluye una ración de papas con extra queso y tocino, aderezadas con cualquiera de nuestras salsas.',
     items: [
-      { name: 'Paquete Infantil', desc: 'Conito de papas (100 g) + alitas (3 pzs) o palomitas de pollo (8 pzs) + limonada, naranjada o soda italiana (355 ml) + postre del día' },
+      { name: 'Tira de Ribs', desc: 'Porción individual ¿Prohibido compartir? 260 grs. de jugosa baby back rib, bañadas en salsa bbq y pasadas dos veces por el horno, hasta desprenderse del hueso', price: 349 },
+      { name: 'Jenga de Costillas', desc: 'El más pedido. ¡Placer para compartir en familia y amigos! 1 kilo de jugosas baby back ribs bañadas en salsa bbq y pasadas dos veces por el horno', price: 679, star: true },
+    ],
+  },
+  {
+    id: 'conos',
+    name: 'Conos',
+    tag: 'Papas al full',
+    items: [
+      { name: 'Sencillo', desc: 'Papas, tocino y queso', price: 95 },
+      { name: 'Doble', desc: 'Papas + boneless, tocino y queso', price: 175 },
+      { name: 'Triple', desc: 'Dos capas de boneless + papas, tocino y queso', price: 215 },
+      { name: 'Cono Fogoso', desc: 'El más pedido. Tres capas de boneless + papas, tocino y queso', price: 225, star: true },
+    ],
+  },
+  {
+    id: 'kids',
+    name: 'Kids',
+    tag: 'Para los peques',
+    sauces: true,
+    items: [
+      { name: 'Palomitas de Pollo', desc: '100 grs. de palomitas de pollo, acompañadas de 100 grs. de papas', price: 155 },
+      { name: 'Alitas', desc: 'Alitas bañadas de cualquiera de nuestras salsas, acompañadas de 100 grs. de papas', price: 155 },
+    ],
+  },
+  {
+    id: 'sin-alcohol',
+    name: 'Sin alcohol',
+    tag: 'Bebidas y cafetería',
+    items: [
+      { name: 'Refresco', desc: '355 ml.', price: 50 },
+      { name: 'Agua natural', desc: '355 ml.', price: 50 },
+      { name: 'Agua mineral', desc: '355 ml.', price: 50 },
+      { name: 'Soda italiana', desc: '355 ml. Para niños', price: 55 },
+      { name: 'Café', desc: 'Cápsula Nespresso · 355 ml.', price: 45 },
+      { name: 'Té', desc: 'Infusión herbal o frutal · 355 ml.', price: 45 },
+    ],
+  },
+  {
+    id: 'frescas',
+    name: 'Bebidas frescas',
+    tag: 'S/A y C/A',
+    note: 'S/A = sin alcohol · C/A = con alcohol. Precios por presentación.',
+    items: [
+      { name: 'Limonada', desc: 'Con agua mineral · S/A: 355 ml $55 · 1 L $85', price: 55 },
+      { name: 'Naranjada', desc: 'Con agua mineral · S/A: 355 ml $55 · 1 L $75', price: 55 },
+      { name: 'Pepinada', desc: 'Con agua mineral · S/A: 355 ml $55 · 1 L $85 · C/A: 355 ml $85 · 1 L $145', price: 55 },
+      { name: 'Piña Colada', desc: 'Jugo de piña, leche de coco, clavel y Bacardi · S/A: 355 ml $65 · 1 L $115 · C/A: 355 ml $85 · 1 L $145', price: 65 },
+      { name: 'Eyakudrink', desc: 'Yakult, leche clavel, lechera y vodka · S/A: 355 ml $55 · C/A: 355 ml $90', price: 55 },
+      { name: 'ICE', desc: 'Cereza o frambuesa, Bacardi si es con alcohol · S/A: 500 ml $75 · 1 L $105 · C/A: 500 ml $95 · 1 L $140', price: 75 },
+    ],
+  },
+  {
+    id: 'cocteles',
+    name: 'Cócteles de la casa',
+    tag: 'Mojitos y más',
+    note: 'S/A = sin alcohol · C/A = con alcohol. Precios por presentación.',
+    items: [
+      { name: 'Vaso Fogoso', desc: 'El más pedido. Bebida frapeada · Opción 1: Malibú y Ron · Opción 2: Pepino y Ginebra o Vodka · Opción 3: Tamarindo con Mezcal o Tequila · C/A: 1 L $170', price: 170, star: true },
+      { name: 'Mojito Cubano', desc: 'Bacardi, limón, hierbabuena y agua mineral · S/A: 600 ml $75 · 1 L $110 · C/A: 600 ml $90 · 1 L $195', price: 75 },
+      { name: 'Mojito Frutos Rojos', desc: 'Frutos rojos, Bacardi, limón, hierbabuena, sirope de frutos rojos y agua mineral · S/A: 600 ml $75 · 1 L $110 · C/A: 600 ml $90 · 1 L $170', price: 75 },
+      { name: 'Mojito de Cereza', desc: 'Cereza, Bacardi, limón, hierbabuena, sirope de frutos rojos y agua mineral · S/A: 600 ml $75 · 1 L $110 · C/A: 600 ml $90 · 1 L $170', price: 75 },
+      { name: 'Azulito', desc: 'Vodka, Volt, agua mineral y Sprite · S/A: 600 ml $75 · 1 L $110 · C/A: 600 ml $90 · 1 L $170', price: 75 },
+      { name: 'Cantarito', desc: 'Bebida receta tradicional de Tequila Jalisco. ¡El cantarito es tuyo! · C/A: 500 ml $85 · 1 L $160', price: 85 },
+    ],
+  },
+  {
+    id: 'cheladas',
+    name: 'Cheladas y cervezas',
+    tag: 'Nacional y premium',
+    note: 'Precios por presentación: 355 ml y 1.2 L, salvo donde se indique.',
+    items: [
+      { name: 'Cerveza Artesanal', desc: 'El más pedido. ¡Cerveza de la casa! Hecha con proceso artesanal, el envase es coleccionable · 355 ml $75', price: 75, star: true },
+      { name: 'Cerveza Nacional', desc: 'Corona, Pacífico, Victoria, XX Lager, Tecate o Indio · 355 ml $59 · 1.2 L $95', price: 59 },
+      { name: 'Michelada Nacional', desc: 'Con escarchado de chamoy de sabor y Tajín · 355 ml $75 · 1.2 L $110', price: 75 },
+      { name: 'Momochela Nacional', desc: 'Mezcla de salsas, clamato, sal y limón · 1.2 L $195', price: 195 },
+      { name: 'Gomichela Nacional', desc: 'Mezcla de salsas, clamato, sal y limón · 1.2 L $185', price: 185 },
+      { name: 'Michelada Resurrección', desc: 'Salsa original de la casa, mango habanero gourmet, salsas negras, limón, sal y cerveza de tu elección · 355 ml $75 · 1.2 L $185', price: 75 },
+      { name: 'Moradito', desc: 'Vino tinto, jarabe natural, sirope de uva y cerveza · 600 ml $90 · 1 L $165', price: 90 },
+      { name: 'Cerveza Premium', desc: 'Stella Artois, Heineken, Ultra, Miller y Modelo Especial · 355 ml $75 · 1.2 L $105', price: 75 },
+      { name: 'Michelada Premium', desc: 'Stella Artois, Heineken, Miller y Modelo Especial. Con escarchado de chamoy y Tajín o sal · 355 ml $59 · 1.2 L $95', price: 59 },
+      { name: 'Venenosa Fogosa', desc: 'El más pedido. Salsas negras, clamato, limón y cerveza premium · 355 ml $70', price: 70 },
+    ],
+  },
+  {
+    id: 'entre-amigos',
+    name: 'Entre amigos',
+    tag: 'Cubetazos de 6',
+    note: 'Cubetazos de 6 piezas.',
+    items: [
+      { name: 'Cubetazo Cerveza Nacional', desc: '6 pzas · Corona, Pacífico, Victoria, XX Lager, Tecate o Indio', price: 289 },
+      { name: 'Cubetazo Cerveza Premium', desc: '6 pzas · Stella Artois, Heineken, Ultra, Miller y Modelo Especial', price: 319 },
     ],
   },
 ]
 
 // ─── SALSAS (heat: 1 = suave · 3 = para valientes; color = swatch visual) ──
+// Orden y nombres según la escala de picor del menú oficial (izq. suave → der. fogosa).
 export const sauces = [
-  { name: 'Ajo Parmesano', desc: 'Cremosa y deliciosa como en ningún otro lugar', heat: 1, popular: true, color: '#EFE3C4' },
-  { name: 'Lemon Pepper', desc: 'Lo acidito del limón con un toque de pimienta', heat: 1, popular: true, color: '#F5D547' },
-  { name: 'Barbecue', desc: 'Lo que nunca falla, con auténtico sabor ahumado', heat: 1, popular: true, color: '#6B3A1F' },
-  { name: 'Original de la Casa', desc: 'El sabor que nos hizo famosos', heat: 2, popular: true, color: '#E2571B' },
-  { name: 'Red Hot', desc: 'Picante clásico, directo y sin rodeos', heat: 2, color: '#E11D2A' },
-  { name: 'Tamarindo Fogoso', desc: 'Dulce, ácido y con su buen toque de fuego', heat: 2, popular: true, color: '#A44A1C' },
-  { name: 'Jalapeño Fogoso', desc: 'El mero mero sabor mexicano', heat: 2, color: '#6FA832' },
-  { name: 'Mango Habanero', desc: 'Tropical y picoso, una mezcla con experiencia', heat: 3, popular: true, color: '#FFA61A' },
-  { name: 'Habanero Fogoso', desc: 'La de los valientes. Atrévete a probarla', heat: 3, popular: true, color: '#C81420' },
+  { name: 'Ajo Parmesano', desc: 'Cremosa y deliciosa como en ningún otro lugar', heat: 1, popular: true, color: '#F3E4C8' },
+  { name: 'Lemon Pepper', desc: 'Lo acidito del limón con un toque de pimienta', heat: 1, popular: true, color: '#C7CE6E' },
+  { name: 'BBQ Original', desc: 'La que nunca falla, con auténtico sabor a barbacoa', heat: 1, popular: true, color: '#6B4327' },
+  { name: 'Smoky BBQ', desc: 'BBQ con humo de verdad, profunda y adictiva', heat: 1, color: '#8E1F1C' },
+  { name: 'Hot BBQ', desc: 'La barbacoa con su buen empujón de picor', heat: 2, color: '#3F2A15' },
+  { name: 'Tamarindo Habanero', desc: 'Dulce, ácido y con su buen toque de fuego', heat: 2, popular: true, color: '#A5551F' },
+  { name: 'Original de la Casa', desc: 'El sabor que nos hizo famosos', heat: 2, popular: true, color: '#5A0E12' },
+  { name: 'Red Hot', desc: 'Picante clásico, directo y sin rodeos', heat: 2, color: '#D62617' },
+  { name: 'Mango Habanero', desc: 'Tropical y picosa, una mezcla con experiencia', heat: 3, popular: true, color: '#E8842A' },
+  { name: 'Jalapeño Fogoso', desc: 'El mero mero sabor mexicano', heat: 3, color: '#D9631A' },
+  { name: 'Habanero Fogoso', desc: 'La de los valientes. Atrévete a probarla', heat: 3, popular: true, color: '#E3231D' },
 ]
 
 // ─── BEBIDAS PREFERIDAS (todas las del menú original) ──────────────────────

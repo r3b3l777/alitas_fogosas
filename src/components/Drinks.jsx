@@ -3,7 +3,7 @@ import { drinks } from '../data'
 
 export default function Drinks() {
   return (
-    <section id="bebidas" className="edge-top relative scroll-mt-20 bg-ink-2 py-20 md:py-28">
+    <section id="bebidas" className="edge-top relative scroll-mt-20 bg-ink-2/72 py-20 md:py-28">
       <div className="shell">
         <Reveal className="mb-12 max-w-2xl">
           <p className="kicker">Bebidas preferidas</p>

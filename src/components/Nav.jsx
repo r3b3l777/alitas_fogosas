@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 import { Logo, Icon } from './ui'
-import { waLink } from '../data'
 
 const links = [
   { href: '#menu', label: 'Menú' },
@@ -56,12 +55,10 @@ export default function Nav() {
             </a>
           ))}
           <a
-            href={waLink()}
-            target="_blank"
-            rel="noopener noreferrer"
+            href="#menu"
             className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-crimson to-fire px-5 py-2.5 text-sm font-bold text-white shadow-lg transition-transform duration-200 hover:scale-[1.04] active:scale-95"
           >
-            <Icon.Whatsapp className="h-4 w-4" />
+            <Icon.Bag className="h-4 w-4" />
             Ordena ya
           </a>
         </div>
@@ -116,14 +113,12 @@ export default function Nav() {
           </div>
           <div className="px-4 pt-4">
             <a
-              href={waLink()}
-              target="_blank"
-              rel="noopener noreferrer"
+              href="#menu"
               onClick={() => setOpen(false)}
               className="flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-crimson to-fire px-5 py-4 text-base font-bold text-white"
             >
-              <Icon.Whatsapp className="h-5 w-5" />
-              Ordena por WhatsApp
+              <Icon.Bag className="h-5 w-5" />
+              Arma tu pedido
             </a>
           </div>
         </div>

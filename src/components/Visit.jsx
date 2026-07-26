@@ -77,7 +77,7 @@ function BranchCard({ b, i }) {
 
 export default function Visit() {
   return (
-    <section id="visita" className="edge-top relative scroll-mt-20 bg-ink-2 py-20 md:py-28">
+    <section id="visita" className="edge-top relative scroll-mt-20 bg-ink-2/72 py-20 md:py-28">
       <div className="shell">
         <Reveal className="mx-auto mb-12 max-w-2xl text-center">
           <p className="kicker justify-center">Nuestras sucursales</p>
