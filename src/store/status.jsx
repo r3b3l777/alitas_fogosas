@@ -29,9 +29,16 @@ export function StatusProvider({ children }) {
     setStatus((prev) => {
       const next = { ...prev }
       for (const row of rows) {
+        // Sólo aceptamos sucursales que existen en data.js: así una fila
+        // sembrada en la tabla no puede inventar una sucursal en el sitio.
+        if (!(row?.slug in prev)) continue
         next[row.slug] = {
           high_demand: Boolean(row.high_demand),
-          note: row.note || null,
+          // La nota se pinta al cliente: la recortamos aquí, que es por donde
+          // pasa todo (carga inicial y realtime), y no en cada componente.
+          note: typeof row.note === 'string' && row.note.trim()
+            ? row.note.trim().slice(0, 120)
+            : null,
           updated_at: row.updated_at || null,
         }
       }

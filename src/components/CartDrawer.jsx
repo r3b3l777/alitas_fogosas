@@ -298,6 +298,7 @@ export default function CartDrawer() {
                       onChange={(e) => setName(e.target.value)}
                       className={inputClass}
                       placeholder="¿A nombre de quién?"
+                      maxLength={60}
                       autoComplete="name"
                     />
                   </Field>
@@ -310,6 +311,7 @@ export default function CartDrawer() {
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
                       rows={3}
+                      maxLength={400}
                       className={`${inputClass} min-h-24 resize-y py-3`}
                       placeholder={
                         mode === 'domicilio'

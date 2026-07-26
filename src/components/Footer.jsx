@@ -82,17 +82,20 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-hairline pt-6 text-sm text-ash-dim sm:flex-row">
+        {/* En móvil esta fila cae justo sobre la pila de alitas del canvas, así
+            que lleva un velo opaco; en pantallas grandes queda limpia. */}
+        <div className="mt-12 flex flex-col items-center justify-between gap-3 rounded-2xl border-t border-hairline bg-ink/88 px-4 py-6 text-sm text-ash-dim backdrop-blur sm:flex-row sm:rounded-none sm:bg-transparent sm:px-0 sm:pb-0 sm:pt-6 sm:backdrop-blur-none">
           <p>© {new Date().getFullYear()} {business.name}. Todos los derechos reservados.</p>
           <div className="flex items-center gap-5">
             <a href="#" className="transition-colors hover:text-ash">Términos y Condiciones</a>
             <a href="#" className="transition-colors hover:text-ash">Aviso de Privacidad</a>
-            {/* Entrada al panel del personal: a la vista pero apagada, para que
-                el cliente no la registre y el empleado no memorice la URL. */}
+            {/* Entrada al panel del personal: discreta, pero legible. En móvil
+                va en una píldora opaca porque si no, la comida que cae por
+                detrás del footer se come la letra. */}
             <a
               href="#empleados"
               title="Acceso del personal"
-              className="text-ash-dim/45 transition-colors hover:text-ash"
+              className="inline-flex min-h-11 items-center whitespace-nowrap rounded-full border border-hairline bg-ink/80 px-4 text-ash transition-colors hover:text-cream sm:min-h-0 sm:rounded-none sm:border-0 sm:bg-transparent sm:px-0 sm:text-ash-dim/45 sm:hover:text-ash"
             >
               · Personal
             </a>

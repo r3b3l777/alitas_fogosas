@@ -34,6 +34,9 @@ function reducer(state, action) {
           ),
         }
       }
+      // Tope de renglones: nadie pide 200 cosas distintas, y sin tope el
+      // carrito se puede inflar hasta dejar la página pegada.
+      if (state.lines.length >= MAX_LINES) return state
       return { ...state, lines: [...state.lines, { ...line, key, qty: line.qty || 1 }] }
     }
     case 'setQty': {
@@ -57,14 +60,57 @@ function reducer(state, action) {
 
 const initialState = { lines: [] }
 
+/* Todo lo que viene de localStorage es texto que CUALQUIERA puede editar desde
+   la consola del navegador (o que puede quedar corrupto si el navegador cierra
+   a media escritura). Si nos lo creemos tal cual, un `qty` de un millón o un
+   `name` de 5 MB congelan la pestaña, y un precio en texto rompe el total y
+   deja la página en blanco. Por eso aquí no se filtra: se reconstruye cada
+   línea campo por campo, con topes. */
+const MAX_LINES = 60
+const MAX_QTY = 99
+const MAX_TEXT = 120
+const MAX_SAUCES = 3
+
+const cleanText = (v, max = MAX_TEXT) =>
+  typeof v === 'string' ? v.slice(0, max) : undefined
+
+function cleanLine(l) {
+  if (!l || typeof l !== 'object') return null
+  const name = cleanText(l.name)
+  if (!name) return null
+  const qty = Math.max(1, Math.min(MAX_QTY, Math.round(Number(l.qty) || 1)))
+  const price = Number(l.price)
+  const sauces = Array.isArray(l.sauces)
+    ? l.sauces.slice(0, MAX_SAUCES).map((s) => cleanText(s, 40)).filter(Boolean)
+    : undefined
+  const line = {
+    name,
+    qty,
+    price: Number.isFinite(price) && price >= 0 && price < 1e6 ? price : 0,
+    groupId: cleanText(l.groupId, 40),
+    groupName: cleanText(l.groupName),
+    onlyBranch: cleanText(l.onlyBranch, 40),
+    ...(sauces?.length ? { sauces } : {}),
+  }
+  // La clave se recalcula: si la guardada venía manipulada, dos líneas podrían
+  // compartir identidad y romper las cantidades.
+  return { ...line, key: lineKey(line) }
+}
+
 function readStorage() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return null
+    // Un blob enorme sólo puede venir de manipulación: ni lo parseamos.
+    if (!raw || raw.length > 200_000) return null
     const parsed = JSON.parse(raw)
     if (!parsed || !Array.isArray(parsed.lines)) return null
-    // Saneamos: si el menú cambió de precio, el carrito viejo no debe mentir.
-    return { lines: parsed.lines.filter((l) => l && l.name && typeof l.qty === 'number') }
+    const lines = []
+    for (const l of parsed.lines.slice(0, MAX_LINES)) {
+      const clean = cleanLine(l)
+      // Si el mismo producto aparece repetido, se queda la primera línea.
+      if (clean && !lines.some((x) => x.key === clean.key)) lines.push(clean)
+    }
+    return { lines }
   } catch {
     return null
   }
@@ -111,6 +157,10 @@ export function useCart() {
 const money = (n) => `$${n.toLocaleString('es-MX')}`
 
 /** Arma el texto del pedido para WhatsApp. */
+/** Tope del texto que viaja en la URL de WhatsApp: pasado cierto largo, el
+    enlace se rompe en algunos navegadores y el pedido se pierde. */
+const MAX_MESSAGE = 1600
+
 export function buildOrderMessage({ lines, total, hasOpenPrice, branch, mode, payment, name, notes }) {
   const out = ['¡Hola! Quiero hacer un pedido 🔥', '']
 
@@ -124,11 +174,12 @@ export function buildOrderMessage({ lines, total, hasOpenPrice, branch, mode, pa
   out.push('')
   out.push(`TOTAL: ${hasOpenPrice ? 'desde ' : ''}${money(total)}`)
   out.push('')
-  if (name) out.push(`Nombre: ${name}`)
+  if (name) out.push(`Nombre: ${String(name).slice(0, 60)}`)
   if (branch) out.push(`Sucursal: ${branch.name}`)
   out.push(`Entrega: ${mode === 'domicilio' ? 'A domicilio' : 'Paso por él'}`)
   if (payment) out.push(`Pago: ${payment}`)
-  if (notes) out.push(`Notas: ${notes}`)
+  if (notes) out.push(`Notas: ${String(notes).slice(0, 400)}`)
 
-  return out.join('\n')
+  const text = out.join('\n')
+  return text.length > MAX_MESSAGE ? `${text.slice(0, MAX_MESSAGE)}…` : text
 }

@@ -19,6 +19,48 @@ import { useStatus } from '../store/status'
 const inputClass =
   'min-h-12 w-full rounded-xl border border-hairline bg-ink/60 px-4 text-cream placeholder:text-ash-dim focus:border-fire focus:outline-none'
 
+/** La nota se le enseña al cliente en el banner: acotada para que un texto
+    kilométrico no rompa la barra ni el aviso del carrito. */
+export const NOTE_MAX = 80
+
+/* ── Freno al fuerza bruta ───────────────────────────────────────────────────
+   Supabase ya limita los intentos por IP del lado del servidor, pero eso no le
+   dice nada a quien está sentado en la caja probando contraseñas. A partir del
+   3er fallo bloqueamos el formulario un rato, y el castigo se duplica: 30s,
+   1min, 2min… hasta 15 minutos. Se guarda en localStorage para que recargar la
+   página no borre el castigo.
+
+   Es una barrera para el troll de mostrador, no para un atacante decidido (el
+   candado real vive en Supabase: contraseña, límites por IP y, si lo activas,
+   captcha). El detalle está en SEGURIDAD.md. */
+const LOCK_KEY = 'alitas-fogosas:intentos:v1'
+const FREE_TRIES = 3
+const BASE_LOCK = 30_000
+const MAX_LOCK = 15 * 60_000
+
+function readLock() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(LOCK_KEY) || 'null')
+    if (!raw || typeof raw.fails !== 'number') return { fails: 0, until: 0 }
+    return { fails: Math.min(20, raw.fails), until: Number(raw.until) || 0 }
+  } catch {
+    return { fails: 0, until: 0 }
+  }
+}
+
+function writeLock(v) {
+  try {
+    localStorage.setItem(LOCK_KEY, JSON.stringify(v))
+  } catch {
+    /* modo privado: nos quedamos con el bloqueo en memoria */
+  }
+}
+
+const lockLabel = (ms) => {
+  const s = Math.ceil(ms / 1000)
+  return s >= 60 ? `${Math.ceil(s / 60)} min` : `${s} s`
+}
+
 function useHashRoute(target) {
   const [on, setOn] = useState(
     () => typeof window !== 'undefined' && window.location.hash === target,
@@ -43,6 +85,37 @@ export default function StaffPanel() {
   const [busy, setBusy] = useState(false)
   const [savingSlug, setSavingSlug] = useState(null)
   const [notes, setNotes] = useState({})
+  const [lock, setLock] = useState(readLock)
+  const [now, setNow] = useState(() => Date.now())
+
+  const lockLeft = Math.max(0, lock.until - now)
+
+  // Sólo corre el reloj mientras haya castigo pendiente.
+  useEffect(() => {
+    if (lockLeft <= 0) return
+    const t = setInterval(() => setNow(Date.now()), 500)
+    return () => clearInterval(t)
+  }, [lockLeft > 0])
+
+  const registerFailure = useCallback(() => {
+    setLock((prev) => {
+      const fails = prev.fails + 1
+      const over = fails - FREE_TRIES
+      const next =
+        over >= 0
+          ? { fails, until: Date.now() + Math.min(MAX_LOCK, BASE_LOCK * 2 ** over) }
+          : { fails, until: 0 }
+      writeLock(next)
+      return next
+    })
+    setNow(Date.now())
+  }, [])
+
+  const clearFailures = useCallback(() => {
+    const fresh = { fails: 0, until: 0 }
+    writeLock(fresh)
+    setLock(fresh)
+  }, [])
 
   useEffect(() => {
     if (!open) return
@@ -74,10 +147,19 @@ export default function StaffPanel() {
 
   const signIn = async (e) => {
     e.preventDefault()
+    if (lockLeft > 0) return
     setError('')
     setBusy(true)
     const { error: err } = await supabase.auth.signInWithPassword({ email, password })
-    if (err) setError('No pudimos entrar. Revisa el correo y la contraseña.')
+    if (err) {
+      // Mensaje deliberadamente vago: decir "ese correo no existe" le regala
+      // al que prueba a ciegas la mitad del trabajo.
+      setError('No pudimos entrar. Revisa el correo y la contraseña.')
+      setPassword('')
+      registerFailure()
+    } else {
+      clearFailures()
+    }
     setBusy(false)
   }
 
@@ -87,7 +169,7 @@ export default function StaffPanel() {
       setError('')
       const payload = {
         high_demand: high,
-        note: (notes[slug] || '').trim() || null,
+        note: (notes[slug] || '').trim().slice(0, NOTE_MAX) || null,
         updated_by: session?.user?.email ?? null,
       }
       const { data, error: err } = await supabase
@@ -163,12 +245,18 @@ export default function StaffPanel() {
                 {error}
               </p>
             )}
+            {lockLeft > 0 && (
+              <p role="alert" className="text-sm text-gold">
+                Demasiados intentos fallidos. Espera {lockLabel(lockLeft)} para
+                volver a probar.
+              </p>
+            )}
             <button
               type="submit"
-              disabled={busy}
+              disabled={busy || lockLeft > 0}
               className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-gradient-to-r from-crimson to-fire font-bold text-white disabled:opacity-50"
             >
-              {busy ? 'Entrando…' : 'Entrar'}
+              {lockLeft > 0 ? `Bloqueado ${lockLabel(lockLeft)}` : busy ? 'Entrando…' : 'Entrar'}
             </button>
           </form>
         ) : (
@@ -220,7 +308,10 @@ export default function StaffPanel() {
                       </span>
                       <input
                         value={notes[b.slug] ?? ''}
-                        onChange={(e) => setNotes((n) => ({ ...n, [b.slug]: e.target.value }))}
+                        onChange={(e) =>
+                          setNotes((n) => ({ ...n, [b.slug]: e.target.value.slice(0, NOTE_MAX) }))
+                        }
+                        maxLength={NOTE_MAX}
                         className={`${inputClass} min-h-11 text-sm`}
                         placeholder="Ej. 45 min de espera"
                       />
