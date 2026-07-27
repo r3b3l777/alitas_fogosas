@@ -174,7 +174,10 @@
       filter 0.9s cubic-bezier(0.19, 1, 0.22, 1);
     will-change: opacity, transform, filter;
   }
-  .reveal.in { opacity: 1; transform: none; filter: none; }
+  /* Soltar la capa de GPU en cuanto termina: `will-change` permanente en los
+     ~40 bloques con .reveal mantenía viva una capa por elemento (el
+     presupuesto sano son <10) y en móviles de gama baja se notaba. */
+  .reveal.in { opacity: 1; transform: none; filter: none; will-change: auto; }
   @media (prefers-reduced-motion: reduce) {
     .reveal { opacity: 1; transform: none; filter: none; transition: none; }
   }
@@ -205,7 +208,7 @@
     transition-delay: var(--rd, 0ms);
     will-change: clip-path, transform;
   }
-  .clip-up.in > img { clip-path: inset(0 0 0 0); transform: scale(1); }
+  .clip-up.in > img { clip-path: inset(0 0 0 0); transform: scale(1); will-change: auto; }
   @media (prefers-reduced-motion: reduce) {
     .clip-up > img { clip-path: none; transform: none; transition: none; }
   }
@@ -295,11 +298,13 @@
   78%  { transform: scale(0.97); }
   100% { opacity: 1; transform: scale(1) translateY(0); }
 }
+/* Sin `will-change`: son animaciones de UNA vez al cargar, así que el hint no
+   evita ningún tirón (el navegador ya promueve la capa mientras la animación
+   corre) y en cambio dejaba la capa viva el resto de la sesión. */
 .load-in {
   opacity: 0;
   animation: loadIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   animation-delay: var(--ld, 0s);
-  will-change: opacity, transform;
 }
 @keyframes loadDown {
   from { opacity: 0; transform: translateY(-100%); }
@@ -326,13 +331,40 @@
   transform: scale(0.55) translateY(22px);
   animation: linePop 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   animation-delay: var(--d, 0s);
-  will-change: opacity, transform;
 }
 @media (min-width: 768px) {
   .line-in { transform-origin: left center; } /* desktop: alineado a la izquierda */
 }
 @media (prefers-reduced-motion: reduce) {
   .line-in { animation: none; transform: none; opacity: 1; }
+}
+
+/* Aparición del botón flotante del pedido. Es un momento de una sola vez por
+   sesión (el primer producto que entra al carrito), así que aquí sí cabe un
+   pop con carácter: nace desde abajo-izquierda, que es donde vive. */
+@keyframes cartPop {
+  0%   { opacity: 0; transform: translate(-14px, 18px) scale(0.82); }
+  62%  { opacity: 1; transform: translate(0, -3px) scale(1.04); }
+  100% { opacity: 1; transform: none; }
+}
+.cart-pop { animation: cartPop 0.42s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* Entradas de utilidad: rápidas, sin rebote. Son avisos y confirmaciones —
+   el usuario necesita leerlas, no admirarlas. */
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: none; }
+}
+.rise-in { animation: riseIn 0.22s cubic-bezier(0.19, 1, 0.22, 1) both; }
+
+@keyframes swapIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+.swap-in { animation: swapIn 0.16s ease-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cart-pop, .rise-in, .swap-in { animation: none; }
 }
 
 /* Slow pulse for glow accents */

@@ -47,10 +47,76 @@ export function useSmoothScroll() {
   }, [])
 }
 
+/* ── Focus trap para diálogos ─────────────────────────────────────────────
+   `aria-modal` sólo se lo cree el lector de pantalla: con el teclado, el Tab
+   se sale del panel y sigue tabulando la página de atrás. Este hook cierra el
+   ciclo dentro del contenedor mientras el diálogo está abierto. */
+const FOCUSABLE =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+
+export function useFocusTrap(ref, active) {
+  useEffect(() => {
+    if (!active) return
+    const onKey = (e) => {
+      if (e.key !== 'Tab') return
+      const root = ref.current
+      if (!root) return
+      const items = [...root.querySelectorAll(FOCUSABLE)].filter(
+        (el) => el.offsetParent !== null || el === document.activeElement,
+      )
+      if (items.length === 0) {
+        e.preventDefault()
+        root.focus()
+        return
+      }
+      const first = items[0]
+      const last = items[items.length - 1]
+      const current = document.activeElement
+      if (!root.contains(current)) {
+        e.preventDefault()
+        first.focus()
+      } else if (e.shiftKey && current === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && current === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [ref, active])
+}
+
+/* ── Región viva para anunciar cambios al lector de pantalla ──────────── */
+export function LiveRegion({ message }) {
+  return (
+    <p role="status" aria-live="polite" className="sr-only">
+      {message}
+    </p>
+  )
+}
+
 /* ── Reveal-on-scroll wrapper ─────────────────────────────────────────── */
 /* `bare`: only toggles the `.in` class (for custom clip/scale reveals),
-   without applying the default opacity/blur/translate styles. */
-export function Reveal({ as: Tag = 'div', className = '', delay = 0, bare = false, children, ...rest }) {
+   without applying the default opacity/blur/translate styles.
+
+   `replay`: vuelve a esconder el bloque al salir de pantalla para que la
+   animación se repita en cada pasada. **Ya no es el comportamiento por
+   defecto.** Volver a desenfocar el mismo texto cada vez que pasas por él
+   cansa a la tercera vuelta, y además obligaba a dejar `will-change` vivo en
+   ~40 elementos para siempre. Se usa a propósito donde la animación ES el
+   momento (las flamas del medidor de picor, que además sólo deben bailar
+   mientras se ven). */
+export function Reveal({
+  as: Tag = 'div',
+  className = '',
+  delay = 0,
+  bare = false,
+  replay = false,
+  children,
+  ...rest
+}) {
   const ref = useRef(null)
   useEffect(() => {
     const el = ref.current
@@ -60,12 +126,12 @@ export function Reveal({ as: Tag = 'div', className = '', delay = 0, bare = fals
       (entries) => {
         entries.forEach((e) => {
           if (e.isIntersecting) {
-            // entering view → play the reveal (with its stagger delay)
             if (!bare) el.style.transitionDelay = `${delay}ms`
             else el.style.setProperty('--rd', `${delay}ms`)
             el.classList.add('in')
-          } else {
-            // leaving view → reset immediately so it replays on re-entry
+            // Ya se reveló: se suelta la capa de GPU y no se vuelve a tocar.
+            if (!replay) io.unobserve(el)
+          } else if (replay) {
             if (!bare) el.style.transitionDelay = '0ms'
             else el.style.setProperty('--rd', '0ms')
             el.classList.remove('in')
@@ -76,7 +142,7 @@ export function Reveal({ as: Tag = 'div', className = '', delay = 0, bare = fals
     )
     io.observe(el)
     return () => io.disconnect()
-  }, [delay, bare])
+  }, [delay, bare, replay])
   return (
     <Tag ref={ref} className={`${bare ? '' : 'reveal '}${className}`} {...rest}>
       {children}
@@ -131,22 +197,19 @@ export function useCountUp(value, duration = 1600) {
     let raf = 0
     const io = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) {
-          // entering view → count up from 0 again
-          if (raf) cancelAnimationFrame(raf)
-          const start = performance.now()
-          const tick = (now) => {
-            const t = Math.min((now - start) / duration, 1)
-            const eased = 1 - Math.pow(1 - t, 3) // easeOutCubic
-            setDisplay(Math.round(eased * value))
-            if (t < 1) raf = requestAnimationFrame(tick)
-          }
-          raf = requestAnimationFrame(tick)
-        } else {
-          // leaving view → reset so it replays next time
-          if (raf) cancelAnimationFrame(raf)
-          setDisplay(0)
+        if (!entries[0].isIntersecting) return
+        // Cuenta UNA vez y se queda en su valor. Antes se reseteaba a 0 al
+        // salir de pantalla, así que al volver a subir los números parpadeaban
+        // a cero — parecía que el dato se había perdido, no una animación.
+        io.unobserve(el)
+        const start = performance.now()
+        const tick = (now) => {
+          const t = Math.min((now - start) / duration, 1)
+          const eased = 1 - Math.pow(1 - t, 3) // easeOutCubic
+          setDisplay(Math.round(eased * value))
+          if (t < 1) raf = requestAnimationFrame(tick)
         }
+        raf = requestAnimationFrame(tick)
       },
       { threshold: 0.4 },
     )
@@ -356,6 +419,13 @@ export const Icon = {
     <svg viewBox="0 0 24 24" className={className} {...S}>
       <path d="M5 8h14l-1.1 11.1a2 2 0 0 1-2 1.9H8.1a2 2 0 0 1-2-1.9L5 8z" />
       <path d="M9 8V6.5a3 3 0 0 1 6 0V8" />
+    </svg>
+  ),
+  Beer: ({ className = '' }) => (
+    <svg viewBox="0 0 24 24" className={className} {...S}>
+      <path d="M6 9h10v10a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V9z" />
+      <path d="M16 11h2a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2" />
+      <path d="M6 9a2.4 2.4 0 0 1 .5-4.2A2.6 2.6 0 0 1 11 3.6a2.5 2.5 0 0 1 4.2 1.3A2.3 2.3 0 0 1 16 9" />
     </svg>
   ),
   Close: ({ className = '' }) => (

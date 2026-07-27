@@ -6,6 +6,7 @@ function CategoryCard({ c, delay = 0 }) {
     <a
       href="#menu"
       className="group relative block h-full overflow-hidden rounded-3xl border border-hairline bg-surface transition-transform duration-300 hover:-translate-y-1.5"
+      aria-label={`${c.name} — ver opciones en el menú`}
     >
       <div className="relative aspect-[4/5] overflow-hidden">
         <Reveal bare delay={delay} className="clip-up absolute inset-0">
@@ -15,7 +16,10 @@ function CategoryCard({ c, delay = 0 }) {
         <div className="absolute inset-x-0 bottom-0 p-5">
           <h3 className="text-2xl text-cream">{c.name}</h3>
           <p className="mt-1.5 line-clamp-2 text-sm text-ash">{c.desc}</p>
-          <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-fire opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+          {/* En pantalla táctil no hay hover: si se deja en opacity-0 la pista
+              de "esto se toca" nunca aparece. Sólo se esconde donde SÍ hay
+              cursor fino, y vuelve con el foco de teclado. */}
+          <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-fire transition-opacity duration-300 [@media(hover:hover)_and_(pointer:fine)]:opacity-0 [@media(hover:hover)_and_(pointer:fine)]:group-hover:opacity-100 [@media(hover:hover)_and_(pointer:fine)]:group-focus-visible:opacity-100">
             Ver opciones <Icon.Arrow className="h-4 w-4" />
           </span>
         </div>

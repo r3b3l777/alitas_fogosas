@@ -63,6 +63,15 @@ export const branches = [
 ]
 
 /** Construye un link de WhatsApp con mensaje pre-cargado. */
+/** Horario que aplica HOY. Antes la barra del hero mostraba siempre la
+    primera fila ("Domingo – Jueves"), así que un viernes anunciaba una hora de
+    cierre equivocada. 0 = domingo … 6 = sábado. */
+export function hoursToday(now = new Date()) {
+  const day = now.getDay()
+  const weekend = day === 5 || day === 6 // viernes y sábado cierran más tarde
+  return business.hours[weekend ? 1 : 0]
+}
+
 export function waLink(text = 'Hola 👋 quiero hacer un pedido de Alitas Fogosas') {
   return `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(text)}`
 }
@@ -119,13 +128,15 @@ export const menu = [
     tag: 'La estrella',
     sauces: true, // al agregar al carrito se piden salsas
     note: 'Se sirven con vegetales frescos y dip de aderezo (tamaño según la orden). Las cervezas de estos paquetes están marcadas en el menú y no incluyen marcas premium.',
+    // `combo` = el paquete con cerveza del menú oficial. Va como dato (no como
+    // texto en `desc`) para poder ofrecerlo como opción real al agregar.
     items: [
-      { name: '324 grs.', desc: '+1 cerveza $169', price: 105 },
-      { name: '514 grs.', desc: '+1 cerveza $199', price: 155 },
-      { name: '832 grs.', desc: '+2 cervezas $299', price: 209 },
-      { name: '1,212 grs.', desc: '+2 cervezas $429', price: 279 },
-      { name: '1,636 grs.', desc: '+3 cervezas $519', price: 379 },
-      { name: '2,442 grs.', desc: '+3 cervezas $749 · para la banda', price: 599, star: true },
+      { name: '324 grs.', price: 105, combo: { beers: 1, price: 169 } },
+      { name: '514 grs.', price: 155, combo: { beers: 1, price: 199 } },
+      { name: '832 grs.', price: 209, combo: { beers: 2, price: 299 } },
+      { name: '1,212 grs.', price: 279, combo: { beers: 2, price: 429 } },
+      { name: '1,636 grs.', price: 379, combo: { beers: 3, price: 519 } },
+      { name: '2,442 grs.', desc: 'Para la banda', price: 599, star: true, combo: { beers: 3, price: 749 } },
     ],
   },
   {
@@ -135,10 +146,10 @@ export const menu = [
     sauces: true,
     note: 'Se sirven con vegetales frescos y dip de aderezo (tamaño según la orden). Las cervezas de estos paquetes están marcadas en el menú y no incluyen marcas premium.',
     items: [
-      { name: '282 grs.', desc: '+1 cerveza $169', price: 129 },
-      { name: '554 grs.', desc: '+2 cervezas $289', price: 189 },
-      { name: '662 grs.', desc: '+2 cervezas $385', price: 285 },
-      { name: '996 grs.', desc: '+3 cervezas $579 · ideal para compartir', price: 419, star: true },
+      { name: '282 grs.', price: 129, combo: { beers: 1, price: 169 } },
+      { name: '554 grs.', price: 189, combo: { beers: 2, price: 289 } },
+      { name: '662 grs.', price: 285, combo: { beers: 2, price: 385 } },
+      { name: '996 grs.', desc: 'Ideal para compartir', price: 419, star: true, combo: { beers: 3, price: 579 } },
     ],
   },
   {

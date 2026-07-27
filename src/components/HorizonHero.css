@@ -5,15 +5,18 @@
    re-tematizado a los tokens de la marca.
    ============================================================ */
 
+/* Los tokens del hero NO son una paleta aparte: apuntan a los mismos tokens
+   del sitio (index.css). Antes `--hz-bg` era #100805 contra el #0b0705 del
+   resto de la página, y en el borde del hero se veía un escalón de color. */
 .hero-container {
-  --hz-bg: #100805;
-  --hz-text: #fdf3e7;
-  --hz-muted: #c9b8ab;
-  --hz-faint: #8f7f74;  /* AA: 5.85:1 */
-  --hz-red: #e11d2a;
-  --hz-red-text: #f7b733; /* rojo legible en texto chico */
-  --hz-red-hot: #ff6a1a;
-  --hz-line: rgba(255, 255, 255, 0.09);
+  --hz-bg: var(--color-ink);
+  --hz-text: var(--color-cream);
+  --hz-muted: var(--color-ash);
+  --hz-faint: var(--color-ash-dim); /* AA: 5.85:1 */
+  --hz-red: var(--color-crimson);
+  --hz-red-text: var(--color-gold); /* rojo legible en texto chico */
+  --hz-red-hot: var(--color-fire);
+  --hz-line: var(--color-hairline);
 
   position: relative;
   z-index: 1;
@@ -56,12 +59,16 @@
   display: none;
 }
 
-/* Viñeta + calor en el piso del ring */
+/* Viñeta + calor en el piso del ring.
+   El último tramo funde el lienzo con el fondo del sitio: sin ese degradado,
+   donde termina el sticky quedaba una línea horizontal dura entre la escena
+   3D y el resto de la página. */
 .hero-vignette {
   position: absolute;
   inset: 0;
   pointer-events: none;
   background:
+    linear-gradient(180deg, transparent 62%, color-mix(in srgb, var(--color-ink) 82%, transparent) 88%, var(--color-ink) 100%),
     radial-gradient(120% 70% at 50% 108%, rgba(247, 183, 51, 0.22), transparent 60%),
     radial-gradient(90% 60% at 50% 10%, rgba(255, 106, 26, 0.14), transparent 66%),
     radial-gradient(100% 100% at 50% 50%, transparent 42%, rgba(8, 4, 2, 0.78) 100%);
@@ -83,14 +90,32 @@
   text-align: center;
   /* Deja aire para el nav fijo del sitio y para el notch. */
   padding: calc(96px + env(safe-area-inset-top)) 22px 96px;
+  isolation: isolate;
+}
+
+/* Velo detrás del texto: el volcán en erupción es lo más brillante de la
+   página y el subtítulo en `ash` se perdía encima. El velo va sólo detrás de
+   la columna de contenido, así que no apaga la escena de los lados. */
+.hero-content::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    62% 46% at 50% 46%,
+    color-mix(in srgb, var(--color-ink) 74%, transparent),
+    color-mix(in srgb, var(--color-ink) 34%, transparent) 58%,
+    transparent 78%
+  );
 }
 
 .hero-eyebrow {
   font-family: var(--font-body), sans-serif;
   text-transform: uppercase;
-  letter-spacing: 0.3em;
-  font-size: clamp(0.62rem, 1.4vw, 0.78rem);
-  font-weight: 600;
+  letter-spacing: 0.28em; /* mismo `kicker` que el resto de las secciones */
+  font-size: clamp(0.62rem, 1.4vw, 0.72rem);
+  font-weight: 700;
   color: var(--hz-red-text);
   display: flex;
   align-items: center;
@@ -169,14 +194,21 @@
   opacity: 1;
 }
 
-/* Salvavidas: pase lo que pase con la animación, el contenido se ve. */
+/* Salvavidas: pase lo que pase con la animación, el contenido se ve.
+   Va con !important a propósito. GSAP anima con estilos INLINE, así que si la
+   intro se queda a medias (pestaña en segundo plano y rAF congelado, WebGL
+   lento, un error), esos inline ganan y los botones del hero se quedan en
+   opacity 0 para siempre — justo lo que este bloque debía evitar. */
+.hero-content.shown .hero-title .title-char,
 .hero-content.shown .hero-eyebrow,
 .hero-content.shown .subtitle-line,
 .hero-content.shown .hero-actions,
 .hero-content.shown .hero-fine,
 .hero-content.shown .hero-stats,
 .hero-content.shown .scroll-hint {
-  opacity: 1;
+  opacity: 1 !important;
+  filter: none !important;
+  transform: none !important;
 }
 
 .hero-actions {
@@ -188,14 +220,16 @@
   opacity: 0;
 }
 
+/* Píldora, no rectángulo: todos los CTA del sitio (nav, menú, carrito, footer)
+   son `rounded-full`. Con radio 9px el hero se leía como otro producto. */
 .hero-btn {
   font-family: var(--font-body), sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.92rem;
-  padding: 15px 28px;
-  border-radius: 9px;
+  padding: 16px 30px;
+  border-radius: 999px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -211,32 +245,33 @@
     border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Mismo degradado y mismo glow que el CTA del nav y del carrito. */
 .hero-btn--primary {
   background: linear-gradient(90deg, var(--hz-red), var(--hz-red-hot));
   color: #fff;
-  border: 1px solid var(--hz-red-hot);
-  box-shadow: 0 14px 40px -12px rgba(225, 29, 42, 0.75);
+  border: 1px solid transparent;
+  box-shadow: 0 18px 60px -22px rgba(225, 29, 42, 0.7);
 }
 .hero-btn--primary:hover {
-  background: var(--hz-red-hot);
-  transform: translateY(-2px);
-  box-shadow: 0 20px 52px -12px rgba(255, 106, 26, 0.9);
+  transform: scale(1.04);
+  box-shadow: 0 20px 60px -18px rgba(255, 106, 26, 0.85);
 }
 
+/* Gemelo del botón "Ver las salsas" del hero de abajo. */
 .hero-btn--ghost {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.05);
   color: var(--hz-text);
   border: 1px solid var(--hz-line);
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
 }
 .hero-btn--ghost:hover {
-  border-color: rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .hero-btn:active {
-  transform: translateY(-1px) scale(0.97);
+  transform: scale(0.95);
 }
 
 .hero-fine {

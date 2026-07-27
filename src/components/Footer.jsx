@@ -1,5 +1,5 @@
 import { Logo, Icon } from './ui'
-import { business, waLink } from '../data'
+import { business, hoursToday, waLink } from '../data'
 
 const nav = [
   { href: '#menu', label: 'Menú' },
@@ -75,27 +75,37 @@ export default function Footer() {
                 </li>
                 <li className="flex items-center gap-2">
                   <Icon.Clock className="h-4 w-4 shrink-0 text-fire" />
-                  <span>{business.hours[0].h}</span>
+                  <span>Hoy · {hoursToday().h}</span>
                 </li>
               </ul>
             </div>
           </div>
         </div>
 
-        {/* En móvil esta fila cae justo sobre la pila de alitas del canvas, así
-            que lleva un velo opaco; en pantallas grandes queda limpia. */}
-        <div className="mt-12 flex flex-col items-center justify-between gap-3 rounded-2xl border-t border-hairline bg-ink/88 px-4 py-6 text-sm text-ash-dim backdrop-blur sm:flex-row sm:rounded-none sm:bg-transparent sm:px-0 sm:pb-0 sm:pt-6 sm:backdrop-blur-none">
+        {/* Esta fila cae justo sobre la pila de alitas del canvas, así que
+            lleva un velo opaco. Antes el velo se apagaba con `sm:` y en
+            escritorio la letra volvía a competir con la comida; ahora la
+            tarjeta es la misma en todos los tamaños y sólo cambia el eje
+            (columna en móvil, fila en escritorio). */}
+        <div className="mt-12 flex flex-col items-center justify-between gap-3 rounded-2xl border border-hairline bg-ink/88 px-4 py-5 text-sm text-ash-dim backdrop-blur sm:flex-row sm:gap-6 sm:px-6 sm:py-3.5">
           <p>© {new Date().getFullYear()} {business.name}. Todos los derechos reservados.</p>
-          <div className="flex items-center gap-5">
-            <a href="#" className="transition-colors hover:text-ash">Términos y Condiciones</a>
-            <a href="#" className="transition-colors hover:text-ash">Aviso de Privacidad</a>
-            {/* Entrada al panel del personal: discreta, pero legible. En móvil
-                va en una píldora opaca porque si no, la comida que cae por
-                detrás del footer se come la letra. */}
+          <div className="flex items-center gap-2">
+            {/* Ojo: aquí vivían "Términos" y "Aviso de Privacidad" apuntando a
+                `#`. Un enlace que no lleva a ningún lado es peor que no tenerlo;
+                cuando existan esas páginas, se vuelven a poner con su URL. */}
+            <a
+              href={`mailto:${business.email}`}
+              className="inline-flex min-h-11 items-center whitespace-nowrap rounded-full border border-hairline bg-ink/80 px-4 text-ash transition-colors hover:text-cream sm:min-h-9"
+            >
+              Contacto
+            </a>
+            {/* Entrada al panel del personal: discreta, pero legible. Va en
+                una píldora opaca en TODOS los tamaños — la comida que cae por
+                detrás del footer se comía la letra también en escritorio. */}
             <a
               href="#empleados"
               title="Acceso del personal"
-              className="inline-flex min-h-11 items-center whitespace-nowrap rounded-full border border-hairline bg-ink/80 px-4 text-ash transition-colors hover:text-cream sm:min-h-0 sm:rounded-none sm:border-0 sm:bg-transparent sm:px-0 sm:text-ash-dim/45 sm:hover:text-ash"
+              className="inline-flex min-h-11 items-center whitespace-nowrap rounded-full border border-hairline bg-ink/80 px-4 text-ash transition-colors hover:text-cream sm:min-h-9"
             >
               · Personal
             </a>

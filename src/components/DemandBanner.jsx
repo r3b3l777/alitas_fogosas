@@ -40,7 +40,7 @@ export default function DemandBanner() {
           luz arriba y sombra abajo para que la tarjeta parezca un cristal
           apoyado sobre la página. El tinte `ink/55` no es decorativo: sin él,
           sobre el volcán del hero la letra se pierde. */}
-      <div className="pointer-events-auto relative mx-3 mt-2 overflow-hidden rounded-2xl border border-crimson/35 bg-ink/55 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.95),inset_0_1px_0_rgba(255,255,255,0.16)] backdrop-blur-2xl backdrop-saturate-150 md:mx-auto md:mt-3 md:max-w-3xl">
+      <div className="rise-in pointer-events-auto relative mx-3 mt-2 overflow-hidden rounded-2xl border border-crimson/35 bg-ink/55 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.95),inset_0_1px_0_rgba(255,255,255,0.16)] backdrop-blur-2xl backdrop-saturate-150 md:mx-auto md:mt-3 md:max-w-3xl">
         {/* Brillo especular y calor de marca, por encima del blur */}
         <span
           aria-hidden
@@ -76,7 +76,7 @@ export default function DemandBanner() {
                 href={b.uberEats}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-crimson to-fire px-4 text-sm font-bold text-white transition-transform duration-200 hover:scale-[1.04] active:scale-95 md:min-h-10"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-crimson to-fire px-4 text-sm font-bold text-white transition-all duration-200 hover:brightness-110 active:scale-95 md:min-h-10"
               >
                 {many ? b.name.replace('Sucursal ', '') : 'Abrir Uber Eats'}
                 <Icon.Arrow className="h-4 w-4" />
@@ -86,7 +86,7 @@ export default function DemandBanner() {
 
           <button
             onClick={() => setDismissed(signature)}
-            className="absolute right-2 top-2 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-ash transition-colors hover:text-cream md:right-3 md:top-1/2 md:-translate-y-1/2"
+            className="absolute right-1 top-1 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-ash transition-colors hover:text-cream md:right-2 md:top-1/2 md:h-10 md:w-10 md:-translate-y-1/2"
             aria-label="Cerrar aviso"
           >
             <Icon.Close className="h-5 w-5" />

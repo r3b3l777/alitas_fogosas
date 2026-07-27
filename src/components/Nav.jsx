@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Logo, Icon } from './ui'
+import { Logo, Icon, useFocusTrap } from './ui'
 
 const links = [
   { href: '#menu', label: 'Menú' },
@@ -11,7 +11,10 @@ const links = [
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
+  const [current, setCurrent] = useState('')
   const closeBtnRef = useRef(null)
+  const openBtnRef = useRef(null)
+  const drawerRef = useRef(null)
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24)
@@ -20,17 +23,43 @@ export default function Nav() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  // Scroll-spy: marcar en qué sección va el usuario. Sin esto la barra no dice
+  // nunca dónde estás parado (nav-state-active).
+  useEffect(() => {
+    const targets = links
+      .map((l) => document.querySelector(l.href))
+      .filter(Boolean)
+    if (targets.length === 0 || typeof IntersectionObserver === 'undefined') return
+    const io = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0]
+        if (visible) setCurrent(`#${visible.target.id}`)
+      },
+      { rootMargin: '-30% 0px -55% 0px', threshold: [0, 0.25, 0.5] },
+    )
+    targets.forEach((t) => io.observe(t))
+    return () => io.disconnect()
+  }, [])
+
   // Nota: NO bloqueamos el scroll a propósito — el drawer es de vidrio y se
   // ve/scrollea el contenido detrás (efecto liquid glass).
 
-  // Cerrar con Escape + enfocar el botón de cierre al abrir (accesibilidad)
+  // Cerrar con Escape + enfocar el botón de cierre al abrir; al cerrar, el
+  // foco regresa al botón de hamburguesa (si no, queda en la nada).
   useEffect(() => {
     if (!open) return
     closeBtnRef.current?.focus()
     const onKey = (e) => { if (e.key === 'Escape') setOpen(false) }
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      openBtnRef.current?.focus()
+    }
   }, [open])
+
+  useFocusTrap(drawerRef, open)
 
   return (
     <>
@@ -49,7 +78,12 @@ export default function Nav() {
             <a
               key={l.href}
               href={l.href}
-              className="text-sm font-medium tracking-wide text-ash transition-colors hover:text-cream"
+              aria-current={current === l.href ? 'true' : undefined}
+              className={`relative text-sm font-medium tracking-wide transition-colors after:absolute after:-bottom-1.5 after:left-0 after:h-[2px] after:rounded-full after:bg-gradient-to-r after:from-crimson after:to-fire after:transition-all after:duration-300 ${
+                current === l.href
+                  ? 'text-cream after:w-full'
+                  : 'text-ash after:w-0 hover:text-cream hover:after:w-full'
+              }`}
             >
               {l.label}
             </a>
@@ -64,9 +98,11 @@ export default function Nav() {
         </div>
 
         <button
+          ref={openBtnRef}
           onClick={() => setOpen(true)}
           className="inline-flex h-11 w-11 items-center justify-center rounded-xl text-cream md:hidden"
           aria-label="Abrir menú"
+          aria-expanded={open}
         >
           <Icon.Menu className="h-6 w-6" />
         </button>
@@ -75,15 +111,22 @@ export default function Nav() {
 
       {/* Mobile drawer — sibling of <header> so the header's backdrop-filter
           never turns it into a containing block or bleeds glass into it */}
+      {/* `inert` (no sólo aria-hidden): sin él, los enlaces del drawer cerrado
+          siguen en el orden de tabulación y el teclado se pierde ahí dentro */}
       <div
         className={`fixed inset-0 z-[70] md:hidden ${open ? '' : 'pointer-events-none'}`}
         aria-hidden={!open}
+        inert={!open}
       >
         <div
           className={`absolute inset-0 bg-black/40 transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0'}`}
           onClick={() => setOpen(false)}
         />
         <div
+          ref={drawerRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Menú de navegación"
           className={`absolute right-0 top-0 h-full w-[82%] max-w-sm border-l border-white/10 bg-ink/50 shadow-2xl backdrop-blur-2xl transition-transform duration-300 ${
             open ? 'translate-x-0' : 'translate-x-full'
           }`}
@@ -105,7 +148,12 @@ export default function Nav() {
                 key={l.href}
                 href={l.href}
                 onClick={() => setOpen(false)}
-                className="rounded-xl px-4 py-4 text-lg font-semibold text-cream transition-colors hover:bg-white/5"
+                aria-current={current === l.href ? 'true' : undefined}
+                className={`rounded-xl px-4 py-4 text-lg font-semibold transition-colors ${
+                  current === l.href
+                    ? 'bg-fire/12 text-fire'
+                    : 'text-cream hover:bg-white/5'
+                }`}
               >
                 {l.label}
               </a>

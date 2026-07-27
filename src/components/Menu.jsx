@@ -1,5 +1,5 @@
-import { useEffect, useId, useRef, useState } from 'react'
-import { Reveal, Icon } from './ui'
+import { useCallback, useEffect, useId, useRef, useState } from 'react'
+import { Reveal, Icon, lockScroll, unlockScroll, useFocusTrap } from './ui'
 import { menu, sauces as allSauces, branches } from '../data'
 import { useCart } from '../store/cart'
 import { useStatus } from '../store/status'
@@ -46,21 +46,56 @@ function QtyStepper({ qty, onChange, label }) {
    ------------------------------------------------------------------------- */
 const MAX_SAUCES = 3
 
+/* La hoja se monta y se desmonta con `{sheet && <AddSheet/>}`, así que la
+   entrada y la salida se manejan aquí adentro: `shown` conmuta un frame
+   después de montar, y al cerrar esperamos a que termine la salida antes de
+   avisarle al padre. Salida más corta que la entrada (se siente responsivo:
+   el usuario ya decidió y no quiere esperar a la animación). */
+const SHEET_OUT_MS = 190
+
 function AddSheet({ group, item, onClose }) {
   const { add } = useCart()
   const [qty, setQty] = useState(1)
   const [picked, setPicked] = useState([])
+  const [withBeer, setWithBeer] = useState(false)
+  const [shown, setShown] = useState(false)
   const titleId = useId()
   const ref = useRef(null)
+  const closing = useRef(false)
+
+  const combo = item.combo
+  const unitPrice = withBeer && combo ? combo.price : item.price ?? null
 
   useEffect(() => {
+    const r = requestAnimationFrame(() => setShown(true))
+    return () => cancelAnimationFrame(r)
+  }, [])
+
+  const close = useCallback(() => {
+    if (closing.current) return
+    closing.current = true
+    setShown(false)
+    window.setTimeout(onClose, SHEET_OUT_MS)
+  }, [onClose])
+
+  const lastFocused = useRef(null)
+
+  useEffect(() => {
+    lastFocused.current = document.activeElement
+    lockScroll()
     ref.current?.focus()
     const onKey = (e) => {
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape') close()
     }
     document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [onClose])
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      unlockScroll()
+      lastFocused.current?.focus?.()
+    }
+  }, [close])
+
+  useFocusTrap(ref, true)
 
   const toggle = (name) =>
     setPicked((prev) =>
@@ -72,20 +107,35 @@ function AddSheet({ group, item, onClose }) {
     )
 
   const confirm = () => {
+    const beers = withBeer && combo ? combo.beers : 0
     add({
       groupId: group.id,
       groupName: group.name,
-      name: item.name,
-      price: item.price ?? null,
+      // El nombre lleva el paquete: así el mensaje de WhatsApp y el renglón del
+      // carrito dicen exactamente qué se pidió, sin campos extra que traducir.
+      name: beers ? `${item.name} + ${beers} ${beers === 1 ? 'cerveza' : 'cervezas'}` : item.name,
+      price: unitPrice,
       sauces: picked,
       qty,
     })
-    onClose()
+    close()
   }
 
   return (
     <div className="fixed inset-0 z-[75] flex items-end justify-center sm:items-center">
-      <button aria-label="Cerrar" onClick={onClose} className="absolute inset-0 bg-ink/75" />
+      {/* El velo cierra al tocar fuera, pero no debe ser un botón gigante en el
+          orden de tabulación: el cierre accesible es la X de la hoja. */}
+      <div
+        aria-hidden
+        onClick={close}
+        className={`absolute inset-0 bg-ink/75 transition-opacity duration-300 motion-reduce:transition-none ${
+          shown ? 'opacity-100' : 'opacity-0'
+        }`}
+      />
+      {/* Sube desde abajo (de donde nace en móvil) con un toque de escala y
+          desenfoque; al salir baja menos y más rápido — la salida no necesita
+          tanta ceremonia como la entrada, el usuario ya decidió.
+          Ver nota de `translate`/`scale` en el className. */}
       <div
         role="dialog"
         aria-modal="true"
@@ -93,17 +143,74 @@ function AddSheet({ group, item, onClose }) {
         ref={ref}
         tabIndex={-1}
         data-lenis-prevent
-        className="relative max-h-[88vh] w-full max-w-lg overflow-y-auto overscroll-contain rounded-t-3xl border border-hairline bg-surface p-6 shadow-2xl outline-none sm:rounded-3xl"
+        /* OJO: Tailwind v4 compila `translate-y-*` y `scale-*` a las
+           propiedades CSS `translate` y `scale`, NO a `transform`. Con
+           `transition-[transform,...]` el desplazamiento y la escala saltaban
+           de golpe y sólo se veía animar la opacidad. */
+        className={`relative max-h-[88vh] w-full max-w-lg overflow-y-auto overscroll-contain rounded-t-3xl border border-hairline bg-surface p-6 shadow-2xl outline-none transition-[translate,scale,opacity,filter] ease-[cubic-bezier(0.19,1,0.22,1)] motion-reduce:transition-none sm:rounded-3xl ${
+          shown
+            ? 'translate-y-0 scale-100 opacity-100 blur-0 duration-[380ms]'
+            : 'translate-y-6 scale-[0.985] opacity-0 blur-[6px] duration-[190ms]'
+        }`}
         style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
       >
+        <button
+          onClick={close}
+          aria-label="Cerrar"
+          className="absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-xl text-ash transition-colors hover:text-cream"
+        >
+          <Icon.Close className="h-6 w-6" />
+        </button>
+
         <p className="kicker">{group.name}</p>
-        <h3 id={titleId} className="mt-2 font-display text-3xl text-cream">
+        <h3 id={titleId} className="mt-2 max-w-[calc(100%-3rem)] font-display text-3xl text-cream">
           {item.name}
         </h3>
-        {item.price != null && (
-          <p className="mt-1 font-display text-2xl text-fire-gradient">{money(item.price)}</p>
+        {unitPrice != null && (
+          <p className="mt-1 font-display text-2xl text-fire-gradient">{money(unitPrice)}</p>
         )}
 
+        {/* Paquete con cerveza: es la opción que más sube el ticket, así que va
+            arriba de las salsas y con el precio ya resuelto, no en letra chica. */}
+        {combo && (
+          <div className="mt-6">
+            <p className="text-sm font-semibold text-cream">¿Le agregas cerveza?</p>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              <button
+                onClick={() => setWithBeer(false)}
+                aria-pressed={!withBeer}
+                className={`flex min-h-14 flex-col justify-center rounded-xl border px-4 py-2 text-left transition-colors ${
+                  !withBeer ? 'border-fire bg-fire/15' : 'border-hairline hover:border-fire/40'
+                }`}
+              >
+                <span className="text-sm font-semibold text-cream">Solo la orden</span>
+                <span className="font-display text-lg tabular-nums text-fire-gradient">
+                  {money(item.price)}
+                </span>
+              </button>
+              <button
+                onClick={() => setWithBeer(true)}
+                aria-pressed={withBeer}
+                className={`flex min-h-14 flex-col justify-center rounded-xl border px-4 py-2 text-left transition-colors ${
+                  withBeer ? 'border-fire bg-fire/15' : 'border-hairline hover:border-fire/40'
+                }`}
+              >
+                <span className="text-sm font-semibold text-cream">
+                  Paquete · {combo.beers} {combo.beers === 1 ? 'cerveza' : 'cervezas'}
+                </span>
+                <span className="font-display text-lg tabular-nums text-fire-gradient">
+                  {money(combo.price)}
+                </span>
+              </button>
+            </div>
+            <p className="mt-2 text-xs text-ash-dim">
+              Cerveza nacional (no incluye marcas premium). La marca la eliges por WhatsApp.
+            </p>
+          </div>
+        )}
+
+        {group.sauces && (
+        <>
         <p className="mt-6 text-sm font-semibold text-cream">
           Elige tus salsas{' '}
           <span className="font-normal text-ash-dim">(hasta {MAX_SAUCES} · opcional)</span>
@@ -136,6 +243,8 @@ function AddSheet({ group, item, onClose }) {
             )
           })}
         </div>
+        </>
+        )}
 
         <div className="mt-7 flex items-center justify-between gap-4">
           <QtyStepper qty={qty} onChange={setQty} label={`Cantidad de ${item.name}`} />
@@ -144,7 +253,7 @@ function AddSheet({ group, item, onClose }) {
             className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-crimson to-fire px-6 font-bold text-white transition-transform duration-200 hover:scale-[1.02] active:scale-95"
           >
             Agregar
-            {item.price != null && <span className="tabular-nums">· {money(item.price * qty)}</span>}
+            {unitPrice != null && <span className="tabular-nums">· {money(unitPrice * qty)}</span>}
           </button>
         </div>
       </div>
@@ -172,7 +281,8 @@ export default function Menu() {
   }, [justAdded])
 
   const onAdd = (item) => {
-    if (group.sauces) {
+    // La hoja se abre si hay algo que elegir: salsas o paquete con cerveza.
+    if (group.sauces || item.combo) {
       setSheet({ group, item })
       return
     }
@@ -237,11 +347,14 @@ export default function Menu() {
           </p>
         )}
 
-        <div key={active} className="grid gap-4 md:grid-cols-2">
-          {group.items.map((it, i) => (
-            <Reveal
+        {/* Cambiar de pestaña es la acción que MÁS se repite en esta página (13
+            categorías). Antes cada clic reproducía un reveal escalonado con
+            desenfoque por producto: 50 ms × n de espera para leer precios. Ahora
+            el panel entero entra de una, en 140 ms y sin blur. */}
+        <div key={active} className="swap-in grid gap-4 md:grid-cols-2">
+          {group.items.map((it) => (
+            <div
               key={it.name}
-              delay={i * 50}
               className="group flex items-start justify-between gap-4 rounded-2xl border border-hairline bg-surface p-5 transition-colors hover:border-fire/40"
             >
               <div className="min-w-0">
@@ -253,17 +366,27 @@ export default function Menu() {
                     </span>
                   )}
                 </h3>
-                <p className="mt-1 text-sm leading-relaxed text-ash">{it.desc}</p>
+                {it.desc && <p className="mt-1 text-sm leading-relaxed text-ash">{it.desc}</p>}
+                {it.combo && (
+                  <p className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-gold/25 bg-gold/10 px-2.5 py-1 text-xs font-semibold text-gold">
+                    <Icon.Beer className="h-3.5 w-3.5" />+{it.combo.beers}{' '}
+                    {it.combo.beers === 1 ? 'cerveza' : 'cervezas'} · {money(it.combo.price)}
+                  </p>
+                )}
               </div>
 
               <div className="flex shrink-0 flex-col items-end gap-2.5">
                 {it.price != null && <Price value={it.price} />}
                 <button
                   onClick={() => onAdd(it)}
+                  /* Sin `hover:scale`: es una rejilla de hasta 9 botones
+                     iguales y hacer que cada uno crezca al pasar el cursor
+                     convierte la lista en un campo de saltitos. La respuesta
+                     al hover es de brillo y sombra, que no mueve el layout. */
                   className={`inline-flex min-h-11 items-center gap-1.5 rounded-full px-4 text-sm font-bold transition-all duration-200 active:scale-95 ${
                     justAdded === it.name
                       ? 'bg-gold text-ink'
-                      : 'bg-gradient-to-r from-crimson to-fire text-white hover:scale-[1.04]'
+                      : 'bg-gradient-to-r from-crimson to-fire text-white hover:brightness-110 hover:shadow-lg hover:shadow-crimson/30'
                   }`}
                   aria-label={`Agregar ${it.name} al pedido`}
                 >
@@ -276,7 +399,7 @@ export default function Menu() {
                   )}
                 </button>
               </div>
-            </Reveal>
+            </div>
           ))}
         </div>
 

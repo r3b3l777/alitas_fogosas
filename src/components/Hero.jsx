@@ -1,5 +1,5 @@
 import { Embers, Icon, useParallax } from './ui'
-import { business, img } from '../data'
+import { business, hoursToday, img } from '../data'
 
 export default function Hero() {
   const imgRef = useParallax(0.1)
@@ -17,7 +17,9 @@ export default function Hero() {
           <p className="kicker mb-5 load-in">
             <span className="h-px w-8 bg-gold" /> El fuego del buen comer
           </p>
-          <h1 className="text-[clamp(2.75rem,9.5vw,6rem)] leading-[1.02] text-cream">
+          {/* h2, no h1: el h1 de la página es el título del hero 3D de arriba.
+              Dos h1 rompen la jerarquía para lectores de pantalla. */}
+          <h2 className="text-[clamp(2.75rem,9.5vw,6rem)] leading-[1.02] text-cream">
             <span className="line-mask">
               <span className="line-in" style={{ '--d': '0.06s' }}>Alitas que</span>
             </span>
@@ -27,7 +29,7 @@ export default function Hero() {
             <span className="line-mask">
               <span className="line-in" style={{ '--d': '0.34s' }}>tu pasión</span>
             </span>
-          </h1>
+          </h2>
           <p className="mx-auto mt-6 max-w-md text-lg leading-relaxed text-ash load-in md:mx-0" style={{ '--ld': '0.44s' }}>
             Las alitas más crujientes, bañadas en salsas irresistibles. Pide ahora y
             disfruta el fuego del buen comer —{' '}
@@ -96,7 +98,7 @@ export default function Hero() {
             <Icon.MapPin className="h-4 w-4 text-fire" /> {business.city}
           </span>
           <span className="inline-flex items-center gap-2">
-            <Icon.Clock className="h-4 w-4 text-fire" /> Abierto hoy · {business.hours[0].h}
+            <Icon.Clock className="h-4 w-4 text-fire" /> Abierto hoy · {hoursToday().h}
           </span>
           <span className="inline-flex items-center gap-2">
             <Icon.Whatsapp className="h-4 w-4 text-fire" /> Pedidos para llevar y a domicilio

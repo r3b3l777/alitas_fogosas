@@ -56,7 +56,7 @@ function BranchCard({ b, i }) {
           href={waLink(`Hola 👋 quiero pedir en la ${b.name} de Alitas Fogosas`)}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-crimson to-fire px-4 py-2.5 text-sm font-bold text-white transition-transform duration-200 hover:scale-[1.04] active:scale-95"
+          className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-crimson to-fire px-4 py-2.5 text-sm font-bold text-white transition-all duration-200 hover:brightness-110 hover:shadow-lg hover:shadow-crimson/30 active:scale-95"
         >
           <Icon.Whatsapp className="h-4 w-4" /> Pedir aquí
         </a>

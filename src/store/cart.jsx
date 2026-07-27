@@ -121,11 +121,35 @@ export function CartProvider({ children }) {
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+      const raw = JSON.stringify(state)
+      // Sólo escribimos si algo cambió de verdad: así no despertamos a las
+      // otras pestañas con un `storage` que no trae novedades.
+      if (localStorage.getItem(STORAGE_KEY) !== raw) localStorage.setItem(STORAGE_KEY, raw)
     } catch {
       // Modo privado de Safari: seguimos sin persistencia, no es fatal.
     }
   }, [state])
+
+  /* El carrito es de este navegador y de nadie más (vive en localStorage, no
+     toca el servidor). Lo que sí se pisaba era el mismo usuario con DOS
+     PESTAÑAS abiertas: cada una guardaba su versión sobre la otra y la última
+     en cerrarse borraba lo que la otra hubiera agregado. Escuchando `storage`
+     las pestañas se mantienen en el mismo pedido en vez de competir. */
+  useEffect(() => {
+    const onStorage = (e) => {
+      if (e.key !== STORAGE_KEY) return
+      if (e.newValue == null) {
+        dispatch({ type: 'clear' })
+        return
+      }
+      // Llega de otra pestaña: se sanea igual que al arrancar, porque el
+      // contenido de localStorage nunca es de fiar.
+      const fresh = readStorage()
+      if (fresh) dispatch({ type: 'hydrate', state: fresh })
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [])
 
   const value = useMemo(() => {
     const count = state.lines.reduce((n, l) => n + l.qty, 0)

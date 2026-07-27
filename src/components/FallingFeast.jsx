@@ -20,6 +20,14 @@ import { useEffect, useRef } from 'react'
      `minPile` — y se sueltan de nuevo justo encima de la cámara. Así la
      lluvia nunca se detiene, la pila del footer no se vacía de golpe y el
      salto no se ve porque ocurre fuera del viewport.
+   · GARANTÍA EN MÓVIL: ese goteo depende de cuántas piezas hayan alcanzado a
+     dormirse, y en una pantalla de teléfono (viewport corto, documento de
+     ~18 000 px) dejaba huecos secos de varios segundos. Por eso hay un vigía
+     (`inFeedBand` + `feedTarget`) que mide cuántas piezas se están viendo caer
+     y suelta las que falten. Su munición preferida son las piezas EN TRÁNSITO
+     fuera de pantalla (`reskyOffscreen`): cruzar el documento entero cuesta
+     minuto y medio a 190 px/s, así que hay decenas invisibles que no aportan
+     nada donde están. Con eso la pila del footer no se toca.
    · Respeta prefers-reduced-motion: simula la pila en silencio y la pinta
      estática, sin animación.
    ========================================================================== */
@@ -104,7 +112,25 @@ export default function FallingFeast() {
     if (!ctx) return
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const coarse = window.matchMedia('(pointer: coarse)').matches
+    // `?tactil=1` fuerza el modo táctil en escritorio. El comportamiento de la
+    // lluvia en móvil (densidad, ritmo y el vigía de abajo) no se puede probar
+    // con un ratón: sin este interruptor hace falta un teléfono para ver si un
+    // cambio la dejó seca.
+    const coarse =
+      window.matchMedia('(pointer: coarse)').matches ||
+      new URLSearchParams(window.location.search).has('tactil')
+
+    // Ritmo del loop. En táctil cae más seguido: en una pantalla de teléfono
+    // caben pocas piezas a la vez, así que con el ritmo de escritorio se veía
+    // el fondo vacío durante segundos.
+    const SPAWN_MIN = coarse ? 170 : 260
+    const SPAWN_MAX = coarse ? 520 : 780
+    const RECYCLE_MIN = coarse ? 220 : 420
+    const RECYCLE_MAX = coarse ? 620 : 1100
+    // Cuántas piezas debe haber SIEMPRE entrando por arriba. Escala con el
+    // ancho: en un teléfono angosto 3 ya se lee como lluvia continua; en una
+    // ventana ancha hacen falta más para cubrir el mismo largo de borde.
+    const feedTarget = () => Math.max(5, Math.min(10, Math.round(W / 120)))
 
     let W = 0, H = 0, dpr = 1
     let docH = 0, floorY = 0
@@ -117,6 +143,7 @@ export default function FallingFeast() {
     let recycleAt = 0
     let maxBodies = 0
     let minPile = 0
+    let watchdogAt = 0
     let alive = true
 
     // ── medidas ──────────────────────────────────────────────────────────
@@ -135,11 +162,21 @@ export default function FallingFeast() {
         H,
       )
       floorY = docH - 28 // el suelo queda dentro del footer
-      // suficientes piezas para que la pila del final llegue a llenarse
-      const density = coarse ? 300 : 170
-      maxBodies = Math.max(24, Math.min(coarse ? 48 : 120, Math.round(docH / density)))
-      // nunca reciclamos por debajo de esto: la pila del footer se queda llena
-      minPile = Math.round(maxBodies * 0.55)
+      // Suficientes piezas para que la pila del final llegue a llenarse.
+      // En móvil (iOS/Android) la ventana es angosta y alta: con el presupuesto
+      // viejo (1 pieza por cada 300px de documento, tope 48) casi todo el stock
+      // se quedaba dormido en la pila del footer y en pantalla no caía nada.
+      // Con más cuerpos la lluvia se ve continua sin subir el costo por frame
+      // (los sprites ya vienen pre-renderizados: cada pieza es un drawImage).
+      const density = coarse ? 190 : 170
+      maxBodies = Math.max(24, Math.min(coarse ? 76 : 120, Math.round(docH / density)))
+      // Nunca reciclamos por debajo de esto: la pila del footer se queda llena.
+      // OJO con subirlo: en un documento largo muchas piezas viven en tránsito
+      // y el número real de dormidas se estabiliza cerca del 45% de `maxBodies`.
+      // Con el 55% que había antes, este umbral era INALCANZABLE y `recycle()`
+      // devolvía `false` siempre — la lluvia se sostenía sólo mientras quedaba
+      // sitio para crear cuerpos nuevos, y al llegar al footer se apagaba.
+      minPile = Math.round(maxBodies * 0.28)
     }
 
     // ── cuerpos ──────────────────────────────────────────────────────────
@@ -184,16 +221,21 @@ export default function FallingFeast() {
     }
 
     /** Punto del documento justo encima de la cámara para ese plano. */
-    function skyFor(li) {
+    /** Punto del documento justo encima de la cámara para ese plano.
+        `near`: lo suelta pegado al borde superior en vez de repartido hasta
+        420 px más arriba. Lo usa el vigía: con el rango normal una pieza tarda
+        ~2 s en asomar, y tras un hueco la pantalla seguía vacía todo ese rato. */
+    function skyFor(li, near = false) {
       const scroll = window.scrollY || window.pageYOffset || 0
-      return scroll * LAYERS[li].par - rand(90, 420)
+      const up = near ? rand(40, 170) : rand(90, 420)
+      return scroll * LAYERS[li].par - up
     }
 
     /** Suelta una pieza nueva encima de donde el usuario esté mirando. */
-    function spawnFromSky() {
+    function spawnFromSky(near = false) {
       if (bodies.length >= maxBodies) return
       const li = layerFor()
-      bodies.push(makeBody(li, skyFor(li), false))
+      bodies.push(makeBody(li, skyFor(li, near), false))
     }
 
     // ── reciclado: la lluvia nunca se acaba ───────────────────────────────
@@ -204,13 +246,73 @@ export default function FallingFeast() {
     }
 
     /**
+     * Piezas cayendo AHORA mismo por la BANDA DE ENTRADA: desde un poco antes
+     * del borde superior hasta el 60% de la pantalla. Se mide ahí y no en todo
+     * el viewport a propósito — vigilando el viewport completo, cuatro piezas
+     * repartidas dejaban la mitad de arriba vacía y se veía como que había
+     * dejado de llover. Manteniendo llena la banda de entrada, esas mismas
+     * piezas van bajando y alimentan el resto de la pantalla solas.
+     */
+    function inFeedBand() {
+      const scroll = window.scrollY || window.pageYOffset || 0
+      const limit = H * 0.6
+      let n = 0
+      for (const b of bodies) {
+        if (b.retire || b.still >= STILL_TIME) continue
+        const sy = b.y - scroll * LAYERS[b.layer].par
+        // Desde -60, no desde -OFFSCREEN_PAD: con el margen completo (320 px
+        // sobre un viewport de teléfono) el objetivo se daba por cumplido con
+        // piezas que todavía NO se ven, y la pantalla se veía vacía igual.
+        if (sy > -60 && sy < limit) n++
+      }
+      return n
+    }
+
+    /**
+     * Rescata una pieza que va cayendo FUERA DE PANTALLA y la vuelve a soltar
+     * justo encima de la cámara.
+     *
+     * Es lo que hace que la lluvia no se agote nunca. El documento mide
+     * ~18 000 px y la velocidad terminal son 190 px/s: una pieza tarda minuto
+     * y medio en cruzarlo entero. Durante todo ese viaje no se ve, no está
+     * dormida y por tanto el reciclado normal no la puede tocar — así que el
+     * vigía acababa mordiendo la pila del footer hasta el tope permitido y la
+     * pantalla se quedaba seca.
+     *
+     * Sirve en los dos sentidos, y hacen falta los dos: arriba de la página
+     * las piezas en tránsito están POR DEBAJO de la cámara, y parado en el
+     * footer están POR ENCIMA. Se elige la más lejana, que es la que menos
+     * falta hace donde está.
+     *
+     * No se tocan las que ya están cerca del suelo: esas van a formar pila.
+     */
+    function reskyOffscreen(near = false) {
+      const scroll = window.scrollY || window.pageYOffset || 0
+      let best = null
+      let bestDist = 0
+      for (const b of bodies) {
+        if (b.retire || b.still >= STILL_TIME) continue
+        if (b.y > floorY - 600) continue // a punto de apilarse: se respeta
+        const sy = b.y - scroll * LAYERS[b.layer].par
+        const dist = sy < -OFFSCREEN_PAD ? -sy : sy > H + OFFSCREEN_PAD ? sy - H : 0
+        if (dist > bestDist) { bestDist = dist; best = b }
+      }
+      if (!best) return false
+      const li = layerFor()
+      initBody(best, li, skyFor(li, near), false)
+      return true
+    }
+
+    /**
      * Devuelve al cielo una pieza ya asentada. Prefiere las que están fuera de
      * pantalla (salto invisible); si la pila se está viendo —típico en el
      * footer— disuelve la de más arriba con un fundido en vez de teletransporte.
-     * Nunca baja de `minPile` piezas dormidas, así la pila no se desinfla.
+     * `floor` = mínimo de piezas dormidas que NO se tocan, para que la pila del
+     * final no se desinfle. El vigía de abajo puede pedir un piso más bajo que
+     * el normal cuando la pantalla se queda sin lluvia.
      */
-    function recycle() {
-      if (sleepingCount() <= minPile) return false
+    function recycle(floor = minPile, near = false) {
+      if (sleepingCount() <= floor) return false
       const scroll = window.scrollY || window.pageYOffset || 0
       let hidden = null
       let visible = null
@@ -224,7 +326,7 @@ export default function FallingFeast() {
       }
       if (hidden) {
         const li = layerFor()
-        initBody(hidden, li, skyFor(li), false)
+        initBody(hidden, li, skyFor(li, near), false)
         return true
       }
       if (visible) {
@@ -381,10 +483,43 @@ export default function FallingFeast() {
 
       if (t > spawnAt && bodies.length < maxBodies) {
         spawnFromSky()
-        spawnAt = t + rand(260, 780)
+        spawnAt = t + rand(SPAWN_MIN, SPAWN_MAX)
       } else if (t > recycleAt && bodies.length >= maxBodies) {
-        // ya está llena la escena: mantenemos el goteo reciclando la pila
-        recycleAt = t + (recycle() ? rand(420, 1100) : 500)
+        // Ya está llena la escena: el goteo se mantiene reciclando la pila.
+        // Este es EL ritmo del loop — si se alarga, la pantalla se queda seca.
+        recycleAt = t + (recycle() ? rand(RECYCLE_MIN, RECYCLE_MAX) : 400)
+      }
+
+      /* VIGÍA — en móvil la comida SIEMPRE se está viendo caer.
+         El goteo de arriba depende de cuántas piezas hayan alcanzado a
+         dormirse, y en una pantalla de teléfono (viewport corto, documento
+         larguísimo) eso deja huecos secos de varios segundos: técnicamente el
+         loop no se detuvo, pero el usuario no ve caer nada. Esto lo mide
+         directo — cuántas piezas hay cayendo DENTRO de lo que se ve — y
+         fuerza las que falten, mordiendo por debajo del ritmo normal pero
+         nunca por debajo de `minPile`. */
+      if (coarse && t > watchdogAt) {
+        const falta = feedTarget() - inFeedBand()
+        if (falta > 0) {
+          // Ráfaga proporcional al hueco: soltar de una en una tardaba ~2 s por
+          // pieza en notarse, así que tras un bache la pantalla seguía vacía
+          // aunque el vigía ya estuviera trabajando.
+          let soltadas = 0
+          for (let k = 0; k < Math.min(falta, 3); k++) {
+            // Orden de menor a mayor coste para la escena: crear si cabe →
+            // rescatar una que cae fuera de pantalla → y sólo entonces morder
+            // la pila (respetando siempre `minPile`).
+            const ok =
+              bodies.length < maxBodies
+                ? (spawnFromSky(true), true)
+                : reskyOffscreen(true) || recycle(minPile, true)
+            if (!ok) break
+            soltadas++
+          }
+          watchdogAt = t + (soltadas ? 120 : 500)
+        } else {
+          watchdogAt = t + 200
+        }
       }
 
       // dos subpasos: apilado estable sin jitter
@@ -453,14 +588,29 @@ export default function FallingFeast() {
     })
 
     function onResize() {
+      // En iOS/Android la barra de URL que se esconde al scrollear dispara
+      // `resize` con un cambio de alto de ~60-120px. Si a cada uno de esos le
+      // re-horneamos los 27 sprites, el hilo principal se atasca y la lluvia
+      // se ve congelada. Un cambio así no es un resize de verdad: se ignora.
+      if (coarse && W === window.innerWidth && Math.abs(H - window.innerHeight) < 140) {
+        H = window.innerHeight
+        canvas.style.height = `${H}px`
+        canvas.height = Math.round(H * dpr)
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+        if (reduced) draw() // sin raf no hay quien repinte el lienzo limpio
+        return
+      }
       const prevFloor = floorY
+      const prevDpr = dpr
       measure()
       const shift = floorY - prevFloor
       for (const b of bodies) {
         if (shift) b.y += shift
         b.x = Math.min(Math.max(b.x, b.r), Math.max(b.r, W - b.r))
       }
-      sheets = [] // se re-hornean sólo si cambia el DPR; barato de reconstruir
+      // Los sprites sólo dependen del DPR: si no cambió, se reusan tal cual.
+      if (dpr === prevDpr && sheets.length) return
+      sheets = []
       if (canvasRef.current) {
         Promise.all(
           SPRITES.map(
