@@ -1,5 +1,5 @@
 import { Reveal, useParallax, Icon } from './ui'
-import { img, waLink } from '../data'
+import { img } from '../data'
 
 export default function Cinematic() {
   const bgRef = useParallax(0.22)
@@ -36,12 +36,10 @@ export default function Cinematic() {
         </Reveal>
         <Reveal delay={300}>
           <a
-            href={waLink()}
-            target="_blank"
-            rel="noopener noreferrer"
+            href="#salsas"
             className="mt-8 inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-crimson to-fire px-7 py-4 font-bold text-white glow-crimson transition-transform duration-200 hover:scale-[1.04] active:scale-95"
           >
-            <Icon.Whatsapp className="h-5 w-5" /> Ordena ahora
+            <Icon.Flame className="h-5 w-5" filled /> ¿Qué tanto aguantas?
           </a>
         </Reveal>
       </div>

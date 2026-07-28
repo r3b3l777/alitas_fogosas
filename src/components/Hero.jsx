@@ -1,5 +1,5 @@
 import { Embers, Icon, useParallax } from './ui'
-import { business, hoursToday, img } from '../data'
+import { branches, hoursToday, img } from '../data'
 
 export default function Hero() {
   const imgRef = useParallax(0.1)
@@ -43,13 +43,13 @@ export default function Hero() {
               className="group inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-crimson to-fire px-7 py-4 text-base font-bold text-white glow-crimson transition-transform duration-200 hover:scale-[1.04] active:scale-95"
             >
               <Icon.Bag className="h-5 w-5" />
-              Arma tu pedido
+              Ver el menú completo
             </a>
             <a
               href="#salsas"
               className="inline-flex items-center gap-2 rounded-full border border-hairline bg-white/5 px-7 py-4 text-base font-semibold text-cream backdrop-blur transition-colors hover:bg-white/10"
             >
-              Ver las salsas
+              Elige tu nivel
               <Icon.Arrow className="h-4 w-4 text-fire" />
             </a>
           </div>
@@ -94,8 +94,22 @@ export default function Hero() {
       {/* location strip */}
       <div className="relative z-10 border-t border-hairline bg-ink/40 load-in" style={{ '--ld': '0.8s' }}>
         <div className="shell flex flex-wrap items-center justify-center gap-x-8 gap-y-2 py-4 text-sm text-ash">
-          <span className="inline-flex items-center gap-2">
-            <Icon.MapPin className="h-4 w-4 text-fire" /> {business.city}
+          {/* Las 3 sucursales, cada una a su ficha en Maps */}
+          <span className="inline-flex items-center gap-x-2 gap-y-1 flex-wrap justify-center">
+            <Icon.MapPin className="h-4 w-4 shrink-0 text-fire" />
+            {branches.map((b, i) => (
+              <span key={b.slug} className="inline-flex items-center gap-2">
+                {i > 0 && <span aria-hidden="true" className="text-ash/40">·</span>}
+                <a
+                  href={b.mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="transition-colors hover:text-cream"
+                >
+                  {b.name.replace('Sucursal ', '')}
+                </a>
+              </span>
+            ))}
           </span>
           <span className="inline-flex items-center gap-2">
             <Icon.Clock className="h-4 w-4 text-fire" /> Abierto hoy · {hoursToday().h}

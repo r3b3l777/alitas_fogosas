@@ -253,7 +253,14 @@ function AddSheet({ group, item, onClose }) {
             className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-crimson to-fire px-6 font-bold text-white transition-transform duration-200 hover:scale-[1.02] active:scale-95"
           >
             Agregar
-            {unitPrice != null && <span className="tabular-nums">· {money(unitPrice * qty)}</span>}
+            {unitPrice != null && (
+              <>
+                {/* Separador como elemento propio: pegado al precio se veía chueco,
+                    porque el gap del flex sólo caía de un lado del punto. */}
+                <span aria-hidden="true" className="text-white/45">·</span>
+                <span className="tabular-nums">{money(unitPrice * qty)}</span>
+              </>
+            )}
           </button>
         </div>
       </div>

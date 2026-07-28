@@ -11,6 +11,7 @@
    ============================================================================ */
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { Icon, LiveRegion, lockScroll, unlockScroll, useFocusTrap } from './ui'
+import LiquidGlassButton from './LiquidGlassButton'
 import { branches, WHATSAPP } from '../data'
 import { buildOrderMessage, useCart } from '../store/cart'
 import { useStatus } from '../store/status'
@@ -124,13 +125,13 @@ export default function CartDrawer() {
 
       {/* Botón flotante — se esconde cuando el panel está abierto */}
       {count > 0 && !open && (
-        <button
+        <LiquidGlassButton
           onClick={() => setOpen(true)}
           style={{
             bottom: 'calc(1.25rem + env(safe-area-inset-bottom))',
             left: 'calc(1.25rem + env(safe-area-inset-left))',
           }}
-          className="cart-pop fixed z-40 inline-flex min-h-14 items-center gap-3 rounded-full bg-gradient-to-r from-crimson to-fire px-5 font-bold text-white shadow-xl glow-crimson transition-transform duration-200 hover:scale-105 active:scale-95"
+          className="cart-pop fixed z-40 min-h-14 px-5 font-bold text-white shadow-xl glow-crimson"
           aria-label={`Ver mi pedido, ${count} productos`}
         >
           <Icon.Star className="h-5 w-5" />
@@ -138,7 +139,7 @@ export default function CartDrawer() {
           <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-full bg-ink/35 px-2 text-sm tabular-nums">
             {count}
           </span>
-        </button>
+        </LiquidGlassButton>
       )}
 
       {/* Panel */}
@@ -283,19 +284,57 @@ export default function CartDrawer() {
 
                 {/* Datos del pedido */}
                 <div className="mt-8 space-y-5">
-                  <Field label="Sucursal">
-                    <select
-                      value={branchSlug}
-                      onChange={(e) => setBranchSlug(e.target.value)}
-                      className={inputClass}
-                    >
-                      {branches.map((b) => (
-                        <option key={b.slug} value={b.slug}>
-                          {b.name}
-                          {isSaturated(b.slug) ? ' — mucha demanda' : ''}
-                        </option>
-                      ))}
-                    </select>
+                  {/* Tarjetas en vez de <select>: la sucursal decide tiempos y
+                      qué se puede pedir, así que tiene que verse desde el inicio. */}
+                  <Field label="¿De qué sucursal?">
+                    <div role="radiogroup" aria-label="Sucursal" className="grid grid-cols-1 gap-2">
+                      {branches.map((b) => {
+                        const active = branchSlug === b.slug
+                        return (
+                          <button
+                            key={b.slug}
+                            role="radio"
+                            aria-checked={active}
+                            onClick={() => setBranchSlug(b.slug)}
+                            className={`group flex w-full min-w-0 min-h-14 items-center gap-3 rounded-xl border px-3.5 py-3 text-left transition-colors ${
+                              active
+                                ? 'border-fire bg-fire/15'
+                                : 'border-hairline hover:border-fire/40 hover:bg-white/[0.03]'
+                            }`}
+                          >
+                            <span
+                              aria-hidden="true"
+                              className={`grid h-5 w-5 shrink-0 place-items-center rounded-full border transition-colors ${
+                                active ? 'border-fire bg-fire' : 'border-ash-dim'
+                              }`}
+                            >
+                              <span
+                                className={`h-1.5 w-1.5 rounded-full bg-ink transition-opacity ${
+                                  active ? 'opacity-100' : 'opacity-0'
+                                }`}
+                              />
+                            </span>
+                            <span className="min-w-0 flex-1">
+                              <span
+                                className={`flex flex-wrap items-center gap-x-2 gap-y-1 font-display text-base leading-tight ${
+                                  active ? 'text-cream' : 'text-ash group-hover:text-cream'
+                                }`}
+                              >
+                                {b.name.replace('Sucursal ', '')}
+                                {isSaturated(b.slug) && (
+                                  <span className="rounded-full bg-gold/15 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-gold">
+                                    Mucha demanda
+                                  </span>
+                                )}
+                              </span>
+                              <span className="mt-0.5 line-clamp-2 block text-xs leading-snug text-ash-dim">
+                                {b.address}
+                              </span>
+                            </span>
+                          </button>
+                        )
+                      })}
+                    </div>
                   </Field>
 
                   {pizzaMismatch && (

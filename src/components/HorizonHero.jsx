@@ -15,7 +15,6 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
 import { Icon } from './ui'
-import { waLink } from '../data'
 import './HorizonHero.css'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -933,17 +932,12 @@ export default function HorizonHero() {
         </div>
 
         <div className="hero-actions">
-          <a
-            className="hero-btn hero-btn--primary"
-            href={waLink('Hola 👋 quiero hacer un pedido de Alitas Fogosas')}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Ordena por WhatsApp
+          <a className="hero-btn hero-btn--primary" href="#menu">
+            Pide tus alitas
             <span aria-hidden="true">→</span>
           </a>
-          <a className="hero-btn hero-btn--ghost" href="#menu">
-            Ver el menú
+          <a className="hero-btn hero-btn--ghost" href="#salsas">
+            Conoce las 11 salsas
           </a>
         </div>
 
