@@ -1,9 +1,9 @@
 /* ============================================================================
    CARRITO
    ----------------------------------------------------------------------------
-   Vive en el navegador (localStorage). El pedido no se guarda en ningún lado:
-   se arma un mensaje de WhatsApp con el desglose y el total, y el empleado lo
-   confirma por chat junto con la forma de pago.
+   Vive en el navegador (localStorage) mientras el cliente lo arma. Al enviar,
+   el pedido sale por dos vías: el mensaje de WhatsApp que se construye aquí
+   abajo, y el registro en el panel de empleados (ver src/lib/orders.js).
 
    Cada línea del carrito tiene un `key` que combina categoría + producto +
    salsas elegidas, para que "10 alitas BBQ" y "10 alitas Habanero" sean dos
@@ -192,7 +192,7 @@ export function buildOrderMessage({ lines, total, hasOpenPrice, branch, mode, pa
     const price = l.price ? ` — ${money(l.price * l.qty)}` : ' — (precio según presentación)'
     out.push(`• ${l.qty}× ${l.name}${price}`)
     if (l.groupName) out.push(`   ${l.groupName}`)
-    if (l.sauces?.length) out.push(`   Salsas: ${l.sauces.join(', ')}`)
+    if (l.sauces?.length) out.push(`   🌶️ Salsas: ${l.sauces.join(', ')}`)
   }
 
   out.push('')

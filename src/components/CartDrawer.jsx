@@ -3,8 +3,13 @@
    ----------------------------------------------------------------------------
    Botón flotante con el contador + panel lateral con el desglose.
 
-   El pedido NO se guarda en ningún lado: se arma un mensaje de WhatsApp y el
-   empleado confirma por chat la forma de pago.
+   El pedido sale por DOS caminos a la vez:
+     1. WhatsApp, como siempre (ahí se confirma la forma de pago).
+     2. El panel de empleados (#empleados), donde cae la comanda en vivo.
+
+   El WhatsApp manda: si el registro en el panel falla, el pedido igual llega
+   por chat y se avisa en pantalla. Al revés no — por eso el tope de 300
+   pedidos al día se revisa antes de dejar enviar.
 
    Si la sucursal elegida trae mucha demanda (bandera que prende el personal en
    Supabase), el camino principal cambia a Uber Eats.
@@ -15,6 +20,8 @@ import LiquidGlassButton from './LiquidGlassButton'
 import { branches, WHATSAPP } from '../data'
 import { buildOrderMessage, useCart } from '../store/cart'
 import { useStatus } from '../store/status'
+import { useOrdersQuota } from '../store/orders'
+import { placeOrder } from '../lib/orders'
 
 const money = (n) => `$${n.toLocaleString('es-MX')}`
 const PAYMENTS = ['Efectivo', 'Transferencia', 'Mercado Pago']
@@ -36,6 +43,7 @@ export default function CartDrawer() {
   const [open, setOpen] = useState(false)
   const { lines, count, total, hasOpenPrice, setQty, remove, clear } = useCart()
   const { isSaturated, noteFor } = useStatus()
+  const { quota, refresh: refreshQuota, full: dayFull, low: dayLow } = useOrdersQuota()
 
   const [branchSlug, setBranchSlug] = useState(branches[0].slug)
   const [mode, setMode] = useState('recoger')
@@ -44,6 +52,8 @@ export default function CartDrawer() {
   const [notes, setNotes] = useState('')
   const [confirmClear, setConfirmClear] = useState(false)
   const [announce, setAnnounce] = useState('')
+  // Resultado del registro en el panel de cocina: {ok, daily_no} o {ok:false}.
+  const [sent, setSent] = useState(null)
 
   const titleId = useId()
   const panelRef = useRef(null)
@@ -118,6 +128,26 @@ export default function CartDrawer() {
     })
     return `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(text)}`
   }, [lines, total, hasOpenPrice, branch, mode, payment, name, notes])
+
+  // Al abrir el panel se vuelve a preguntar el cupo: entre que el cliente
+  // agregó productos y decidió enviar pueden haber pasado horas.
+  useEffect(() => {
+    if (open) refreshQuota()
+  }, [open, refreshQuota])
+
+  /* El registro en cocina NO se espera antes de navegar: `await` antes de
+     abrir WhatsApp hace que el navegador trate la pestaña nueva como popup y
+     la bloquee, y el cliente se queda sin su pedido. Se dispara aquí y el
+     enlace sigue su camino; la respuesta se pinta al volver al sitio. */
+  const registerOrder = () => {
+    setSent({ pending: true })
+    placeOrder({ lines, total, hasOpenPrice, branch, mode, payment, name: name.trim(), notes: notes.trim() })
+      .then((res) => {
+        setSent(res)
+        if (res?.ok) refreshQuota()
+      })
+      .catch(() => setSent({ ok: false, reason: 'red' }))
+  }
 
   return (
     <>
@@ -206,7 +236,10 @@ export default function CartDrawer() {
                           <p className="font-display text-lg leading-tight text-cream">{l.name}</p>
                           <p className="text-xs text-ash-dim">{l.groupName}</p>
                           {l.sauces?.length > 0 && (
-                            <p className="mt-1 text-xs text-ash">Salsas: {l.sauces.join(', ')}</p>
+                            <p className="mt-1 text-xs text-ash">
+                              <span className="text-fire">Salsas:</span>{' '}
+                              {l.sauces.join(' · ')}
+                            </p>
                           )}
                         </div>
                         <button
@@ -439,9 +472,49 @@ export default function CartDrawer() {
                 </span>
               </div>
 
+              {/* Confirmación del panel de cocina. El WhatsApp ya salió en
+                  cualquiera de los dos casos; lo que cambia es si en cocina lo
+                  están viendo o hay que insistir por chat. */}
+              {sent?.ok && (
+                <p className="swap-in mb-3 flex items-start gap-2.5 rounded-xl border border-gold/35 bg-gold/10 p-3 text-sm text-cream">
+                  <Icon.Check className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
+                  <span>
+                    Pedido <strong>#{sent.daily_no}</strong> recibido en cocina. Confirma los
+                    detalles por WhatsApp y te decimos el tiempo.
+                  </span>
+                </p>
+              )}
+              {sent && !sent.pending && !sent.ok && sent.reason !== 'sin-supabase' && (
+                <p
+                  role="alert"
+                  className="swap-in mb-3 rounded-xl border border-crimson/40 bg-crimson/12 p-3 text-sm text-cream"
+                >
+                  {sent.reason === 'lleno'
+                    ? 'Hoy ya llegamos a los 300 pedidos. Mándalo por WhatsApp y te decimos si alcanzamos a prepararlo.'
+                    : 'No pudimos avisarle a cocina desde aquí. Tu pedido por WhatsApp sí salió — confírmalo por el chat.'}
+                </p>
+              )}
+
               {/* Mandar pizzas a una sucursal que no las hace es un pedido que
                   nadie puede surtir: se corta aquí, no en el chat. */}
-              {pizzaMismatch ? (
+              {dayFull ? (
+                <>
+                  <p className="mb-3 rounded-xl border border-gold/35 bg-gold/10 p-3 text-sm text-cream">
+                    <strong>Por hoy ya cerramos pedidos.</strong> Llegamos a los{' '}
+                    {quota?.limit ?? 300} del día para poder sacar bien los que ya tenemos. Te
+                    esperamos mañana desde la 1:00 PM.
+                  </p>
+                  <a
+                    href={branch.uberEats}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-hairline px-6 text-sm font-semibold text-ash transition-colors hover:text-cream"
+                  >
+                    Ver si hay en Uber Eats
+                    <Icon.Arrow className="h-4 w-4" />
+                  </a>
+                </>
+              ) : pizzaMismatch ? (
                 <>
                   <button
                     disabled
@@ -471,6 +544,7 @@ export default function CartDrawer() {
                   </a>
                   <a
                     href={waHref}
+                    onClick={registerOrder}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="mt-2.5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-hairline px-6 text-sm font-semibold text-ash transition-colors hover:text-cream"
@@ -481,18 +555,27 @@ export default function CartDrawer() {
               ) : (
                 <a
                   href={waHref}
+                  onClick={registerOrder}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex min-h-14 w-full items-center justify-center gap-2.5 rounded-full bg-gradient-to-r from-crimson to-fire px-6 font-bold text-white transition-transform duration-200 hover:scale-[1.02] active:scale-95"
                 >
                   <Icon.Whatsapp className="h-5 w-5" />
-                  Enviar pedido por WhatsApp
+                  Enviar pedido
                 </a>
               )}
 
-              {!pizzaMismatch && (
+              {!pizzaMismatch && !dayFull && (
                 <p className="mt-3 text-center text-xs text-ash-dim">
-                  Te confirmamos disponibilidad y tiempo por WhatsApp antes de preparar.
+                  Llega al mismo tiempo a WhatsApp y a la cocina de {branch.name.replace('Sucursal ', '')}.
+                  {dayLow && (
+                    <>
+                      {' '}
+                      <span className="font-semibold text-gold">
+                        Quedan {quota.remaining} de {quota.limit} pedidos hoy.
+                      </span>
+                    </>
+                  )}
                 </p>
               )}
             </div>
