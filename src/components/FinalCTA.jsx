@@ -1,5 +1,4 @@
 import { Reveal, Icon, Embers } from './ui'
-import { waLink } from '../data'
 
 export default function FinalCTA() {
   return (
@@ -16,17 +15,23 @@ export default function FinalCTA() {
               Haz volar tu <span className="text-fire-gradient">paladar</span>
             </h2>
             <p className="mt-5 text-lg text-ash">
-              Elige entre 11 salsas —4 de ellas de la casa— y pide ahora por WhatsApp. Para llevar o a
-              domicilio.
+              Elige entre 11 salsas —4 de ellas de la casa— y arma tu orden en un minuto. Para
+              llevar o a domicilio.
             </p>
+            {/* Sin logo de WhatsApp y sin salir del sitio: el pedido se arma
+                aquí y de ahí sale solo. Sacar al cliente a un chat vacío en el
+                último empujón era pedirle que escribiera su orden a mano. */}
             <a
-              href={waLink()}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-9 inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-crimson to-fire px-9 py-5 text-lg font-bold text-white glow-crimson transition-transform duration-200 hover:scale-[1.04] active:scale-95"
+              href="#menu"
+              className="group mt-9 inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-crimson to-fire px-9 py-5 text-lg font-bold text-white glow-crimson transition-transform duration-200 hover:scale-[1.04] active:scale-95"
             >
-              <Icon.Whatsapp className="h-6 w-6" /> Ordena por WhatsApp
+              <Icon.Bag className="h-6 w-6" />
+              Haz tu pedido aquí
+              <Icon.Arrow className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
             </a>
+            <p className="mt-4 text-sm text-ash-dim">
+              Te confirmamos tiempo y disponibilidad por WhatsApp antes de preparar.
+            </p>
           </div>
         </Reveal>
       </div>
