@@ -948,8 +948,12 @@ export default function HorizonHero() {
 
         {/* "Aquí" es un enlace de verdad, no una figura retórica: desde que el
             sitio toma pedidos, el camino corto es el menú, no el teléfono. */}
+        {/* Los dos caminos son enlaces reales. "Uber Eats" baja a Sucursales
+            porque el enlace de Uber es POR SUCURSAL: mandarlo a uno solo desde
+            aquí obligaría a elegir por el cliente. */}
         <p className="hero-fine">
-          Pide <a href="#menu">aquí mismo</a> o por Uber Eats. Tres sucursales.
+          Pide <a href="#menu">aquí mismo</a> o por{' '}
+          <a href="#visita">Uber Eats</a>. Tres sucursales.
         </p>
 
         <div className="hero-stats">
