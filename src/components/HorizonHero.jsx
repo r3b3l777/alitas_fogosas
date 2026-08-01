@@ -186,12 +186,13 @@ export default function HorizonHero() {
   /** Si el dispositivo no puede crear contexto WebGL, caemos a un fondo CSS. */
   const [webglFailed, setWebglFailed] = useState(false)
 
-  // En móvil recortamos el recorrido: menos scroll antes del contenido real.
-  const [sections] = useState(() =>
-    typeof window !== 'undefined' && window.matchMedia('(max-width: 860px)').matches
-      ? SCROLL_SECTIONS.slice(0, 1)
-      : SCROLL_SECTIONS,
-  )
+  /* El recorrido es el mismo en teléfono que en escritorio: las tres paradas
+     (hero + los dos capítulos) y los tres waypoints de cámara.
+
+     Antes en móvil se recortaba a un capítulo para llegar antes al menú, pero
+     eso dejaba la cámara cruzando los tres waypoints en la mitad del scroll:
+     el volcán se echaba encima de golpe y los capítulos pasaban volando. */
+  const sections = SCROLL_SECTIONS
 
   const threeRefs = useRef({
     scene: null,
@@ -927,7 +928,7 @@ export default function HorizonHero() {
         </h1>
 
         <div className="hero-subtitle">
-          <p className="subtitle-line">Once salsas hechas en casa, de lo cremosito a la de los valientes.</p>
+          <p className="subtitle-line">Once salsas, cuatro de ellas de la casa. De lo cremosito a la de los valientes.</p>
           <p className="subtitle-line">Alitas, boneless y costillas al fuego. Para llevar o a domicilio.</p>
         </div>
 
@@ -936,13 +937,19 @@ export default function HorizonHero() {
             Pide tus alitas
             <span aria-hidden="true">→</span>
           </a>
+          {/* Dos datos en un botón: el catálogo completo manda el volumen (11)
+              y la insignia dorada dice cuáles son receta propia (4). Decir
+              sólo "las 4 de la casa" hacía parecer que hay pocas. */}
           <a className="hero-btn hero-btn--ghost" href="#salsas">
-            Conoce las 11 salsas
+            11 salsas
+            <span className="hero-btn__badge">4 de la casa</span>
           </a>
         </div>
 
+        {/* "Aquí" es un enlace de verdad, no una figura retórica: desde que el
+            sitio toma pedidos, el camino corto es el menú, no el teléfono. */}
         <p className="hero-fine">
-          Pide al <strong>729 142 9080</strong> o por Uber Eats. Tres sucursales.
+          Pide <a href="#menu">aquí mismo</a> o por Uber Eats. Tres sucursales.
         </p>
 
         <div className="hero-stats">

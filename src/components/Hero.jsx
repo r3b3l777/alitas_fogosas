@@ -31,9 +31,10 @@ export default function Hero() {
             </span>
           </h2>
           <p className="mx-auto mt-6 max-w-md text-lg leading-relaxed text-ash load-in md:mx-0" style={{ '--ld': '0.44s' }}>
-            Las alitas más crujientes, bañadas en salsas irresistibles. Pide ahora y
-            disfruta el fuego del buen comer —{' '}
-            <span className="text-cream">con cerveza y buena compañía.</span>
+            Las alitas más crujientes, bañadas en la salsa que elijas: son{' '}
+            <span className="text-cream">11</span>, y <span className="text-gold">4 de la casa</span>{' '}
+            con receta propia. Pide ahora y disfruta el fuego del buen comer, con cerveza y
+            buena compañía.
           </p>
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3 load-in md:justify-start" style={{ '--ld': '0.56s' }}>
@@ -49,8 +50,10 @@ export default function Hero() {
               href="#salsas"
               className="inline-flex items-center gap-2 rounded-full border border-hairline bg-white/5 px-7 py-4 text-base font-semibold text-cream backdrop-blur transition-colors hover:bg-white/10"
             >
-              Elige tu nivel
-              <Icon.Arrow className="h-4 w-4 text-fire" />
+              11 salsas
+              <span className="rounded-full bg-gold px-2 py-0.5 text-[0.68rem] font-extrabold uppercase tracking-wide text-ink shadow-[0_4px_14px_-4px_rgba(247,183,51,0.75)]">
+                4 de la casa
+              </span>
             </a>
           </div>
 
@@ -80,12 +83,14 @@ export default function Hero() {
             {/* floating price chip */}
             <div className="absolute bottom-4 left-4 glass rounded-2xl px-4 py-3 shadow-xl">
               <p className="font-display text-3xl leading-none text-fire-gradient">6 pzs</p>
-              <p className="mt-1 text-xs font-medium text-ash">desde $95 · con vegetales y dip</p>
+              <p className="mt-1 text-xs font-medium text-ash">
+                desde $95 · con vegetales, dip y tu salsa
+              </p>
             </div>
             {/* rating chip */}
             <div className="absolute right-4 top-4 glass flex items-center gap-2 rounded-full px-3.5 py-2 shadow-lg">
               <Icon.Flame className="h-4 w-4 text-fire" filled />
-              <span className="text-sm font-bold text-cream">11 salsas</span>
+              <span className="text-sm font-bold text-cream">11 salsas · 4 de la casa</span>
             </div>
           </div>
         </div>

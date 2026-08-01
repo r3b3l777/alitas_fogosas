@@ -265,6 +265,23 @@
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
 }
+/* Insignia dorada dentro del botón. El oro es el único acento que no compite
+   con el naranja del volcán detrás, así que "4 de la casa" salta sin pelearse
+   con el fondo. Ojo: `letter-spacing` del botón es 0.14em y aquí se baja, o la
+   píldora se estira hasta partir el botón en dos líneas en teléfono. */
+.hero-btn__badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: var(--color-gold);
+  color: var(--color-ink);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  padding: 4px 9px;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px -4px rgba(247, 183, 51, 0.75);
+}
 .hero-btn--ghost:hover {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.2);
@@ -282,6 +299,27 @@
 }
 .hero-fine strong {
   color: var(--hz-text);
+}
+/* El subrayado va despegado del texto para que no corte las descendentes;
+   el color de marca ya dice "esto se toca", el subrayado lo confirma sin
+   depender del color. */
+.hero-fine a {
+  color: var(--hz-text);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--color-fire);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  border-radius: 4px;
+  transition: color 0.2s ease, text-decoration-color 0.2s ease;
+}
+.hero-fine a:hover {
+  color: var(--color-fire);
+  text-decoration-color: currentColor;
+}
+.hero-fine a:focus-visible {
+  outline: 2px solid var(--color-fire);
+  outline-offset: 3px;
 }
 
 /* --- Stats del ring --- */
@@ -406,6 +444,7 @@
 }
 
 .content-section {
+  position: relative;
   min-height: 100vh;
   min-height: 100svh;
   display: flex;
@@ -414,6 +453,25 @@
   justify-content: center;
   text-align: center;
   padding: 90px 22px;
+}
+
+/* Mismo velo radial que protege al hero. En la última parada del recorrido la
+   cámara está encima del cráter y el bloom inunda la pantalla de amarillo: sin
+   este velo el capítulo 02 se volvía ilegible, sobre todo en teléfono, donde
+   el volcán ocupa proporcionalmente más encuadre.
+   Va un punto más opaco que el del hero porque ahí es donde más brilla. */
+.content-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    68% 50% at 50% 48%,
+    color-mix(in srgb, var(--color-ink) 82%, transparent),
+    color-mix(in srgb, var(--color-ink) 42%, transparent) 58%,
+    transparent 80%
+  );
 }
 
 .content-section .hero-title {

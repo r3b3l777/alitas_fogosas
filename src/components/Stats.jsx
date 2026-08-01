@@ -1,7 +1,7 @@
 import { Reveal, useCountUp } from './ui'
 
 const stats = [
-  { value: 11, suffix: '', label: 'Salsas de la casa' },
+  { value: 11, suffix: '', label: 'Salsas · 4 de la casa' },
   { value: 8, suffix: '', label: 'Antojos en el menú' },
   { value: 3, suffix: '', label: 'Sucursales' },
   { value: 100, suffix: '%', label: 'Sabor que enciende' },

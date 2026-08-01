@@ -31,8 +31,8 @@ export default function Cinematic() {
           </span>
         </h2>
         <Reveal delay={200} className="mx-auto mt-6 max-w-xl text-lg text-ash">
-          Cada orden se prepara al momento, se baña en salsa de la casa y se sirve
-          bien caliente. Así se enciende el paladar.
+          Cada orden se prepara al momento, se baña en la salsa que elijas —nuestra o de la casa— y se
+          sirve bien caliente. Así se enciende el paladar.
         </Reveal>
         <Reveal delay={300}>
           <a

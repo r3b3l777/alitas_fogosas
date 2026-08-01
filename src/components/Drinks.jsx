@@ -12,6 +12,8 @@ export default function Drinks() {
           </h2>
           <p className="mt-4 text-ash">
             Gomichelas, megatarros, cócteles de colores y nuestra propia cerveza artesanal.
+            La Michelada Resurrección lleva la salsa original de la casa y mango habanero
+            gourmet: las mismas de las alitas, en tarro.
           </p>
         </Reveal>
 

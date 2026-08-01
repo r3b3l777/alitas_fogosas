@@ -213,7 +213,12 @@ function AddSheet({ group, item, onClose }) {
         <>
         <p className="mt-6 text-sm font-semibold text-cream">
           Elige tus salsas{' '}
-          <span className="font-normal text-ash-dim">(hasta {MAX_SAUCES} · opcional)</span>
+          <span className="font-normal text-ash-dim">(hasta {MAX_SAUCES} · sin costo)</span>
+        </p>
+        <p className="mt-1 text-xs text-ash">
+          <Icon.Star className="mr-1 inline h-3 w-3 text-gold" />
+          Las marcadas con estrella son{' '}
+          <span className="font-semibold text-gold">de la casa</span>, receta propia.
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           {allSauces.map((s) => {
@@ -225,12 +230,19 @@ function AddSheet({ group, item, onClose }) {
                 onClick={() => toggle(s.name)}
                 disabled={full}
                 aria-pressed={on}
+                /* El nivel de picor va en el propio chip: mandar al cliente de
+                   regreso a la sección de salsas a media orden es perderlo. */
+                aria-label={`${s.name}${s.house ? ', de la casa' : ''}, ${
+                  ['', 'suave', 'picosa', 'para valientes'][s.heat]
+                }`}
                 className={`inline-flex min-h-11 items-center gap-2 rounded-full border px-4 text-sm transition-colors ${
                   on
                     ? 'border-fire bg-fire/15 text-cream'
                     : full
                       ? 'cursor-not-allowed border-hairline text-ash-dim opacity-50'
-                      : 'border-hairline text-ash hover:text-cream'
+                      : s.house
+                        ? 'border-gold/40 text-cream hover:border-gold/70'
+                        : 'border-hairline text-ash hover:text-cream'
                 }`}
               >
                 <span
@@ -239,10 +251,17 @@ function AddSheet({ group, item, onClose }) {
                   style={{ background: s.color }}
                 />
                 {s.name}
+                {s.house && <Icon.Star aria-hidden className="h-3 w-3 shrink-0 text-gold" />}
+                <span aria-hidden className="text-[0.7rem] leading-none tracking-tight">
+                  {'🌶️'.repeat(s.heat)}
+                </span>
               </button>
             )
           })}
         </div>
+        <p className="mt-2.5 text-xs text-ash-dim">
+          Todas se preparan aquí mismo. Si no eliges ninguna, lo confirmamos por WhatsApp.
+        </p>
         </>
         )}
 
@@ -316,8 +335,9 @@ export default function Menu() {
               Arma tu <span className="text-fire-gradient">pedido</span>
             </h2>
             <p className="mt-4 text-ash">
-              Agrega lo que se te antoje y lo mandamos por WhatsApp. Ahí eliges si pagas con
-              Mercado Pago, transferencia o efectivo.
+              Agrega lo que se te antoje, elige tus salsas y el pedido cae al mismo
+              tiempo en WhatsApp y en la cocina. El pago lo confirmas por chat: Mercado Pago,
+              transferencia o efectivo.
             </p>
           </div>
           <p className="text-sm text-ash-dim">Precios del menú oficial en MXN · sujetos a cambio.</p>

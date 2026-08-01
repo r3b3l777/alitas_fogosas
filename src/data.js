@@ -93,25 +93,25 @@ export const categories = [
   {
     id: 'alitas',
     name: 'Alitas de la Casa',
-    desc: 'Crujientes por fuera, jugosas por dentro. Bañadas en la salsa que elijas.',
+    desc: 'Crujientes por fuera, jugosas por dentro. Bañadas en hasta 3 salsas, incluidas las 4 de la casa.',
     image: '/img/alitas-menu.jpg', // foto oficial del menú del sitio original
   },
   {
     id: 'boneless',
     name: 'Boneless Fogosos',
-    desc: 'Todo el sabor, sin hueso. Bocados perfectos para no parar de comer.',
+    desc: 'Todo el sabor, sin hueso. Las mismas 11 salsas —4 de ellas de la casa— en bocados para no parar.',
     image: '/img/boneless-menu.jpg', // foto oficial del menú del sitio original
   },
   {
     id: 'burgers',
     name: 'Burgers',
-    desc: 'Como le gustan a Burgerman: carne con tocino estilo panceta, deliciosa al paladar.',
+    desc: 'Carne con tocino estilo panceta y el aderezo honey mustard especial de la casa.',
     image: '/img/burger-menu.jpg', // recorte del tablero oficial del menú
   },
   {
     id: 'costillas',
     name: 'Costillas',
-    desc: 'Baby back ribs jugosas y adictivas, con mucha carne pegada al hueso.',
+    desc: 'Baby back ribs jugosas, bañadas en salsa BBQ y horneadas dos veces.',
     image: '/img/costillas-closeup.jpg',
   },
 ]
@@ -295,6 +295,14 @@ export const menu = [
 
 // ─── SALSAS (heat: 1 = suave · 3 = para valientes; color = swatch visual) ──
 // Orden y nombres según la escala de picor del menú oficial (izq. suave → der. fogosa).
+//
+// `house: true` = salsa DE LA CASA, receta propia. Son 4 y el resto son 7.
+// De dónde sale el corte, según el menú oficial:
+//   · Original de la Casa  — lo dice su propio nombre en el tablero.
+//   · Mango Habanero       — el menú lo llama "mango habanero gourmet" y lo
+//                            lista junto a la original en la Michelada Resurrección.
+//   · Jalapeño Fogoso  ·  Habanero Fogoso — llevan el apellido de la marca.
+// Las otras 7 son sabores de catálogo (BBQ, lemon pepper, ajo parmesano…).
 export const sauces = [
   { name: 'Ajo Parmesano', desc: 'Cremosa y deliciosa como en ningún otro lugar', heat: 1, popular: true, color: '#F3E4C8' },
   { name: 'Lemon Pepper', desc: 'Lo acidito del limón con un toque de pimienta', heat: 1, popular: true, color: '#C7CE6E' },
@@ -302,11 +310,11 @@ export const sauces = [
   { name: 'Smoky BBQ', desc: 'BBQ con humo de verdad, profunda y adictiva', heat: 1, color: '#8E1F1C' },
   { name: 'Hot BBQ', desc: 'La barbacoa con su buen empujón de picor', heat: 2, color: '#3F2A15' },
   { name: 'Tamarindo Habanero', desc: 'Dulce, ácido y con su buen toque de fuego', heat: 2, popular: true, color: '#A5551F' },
-  { name: 'Original de la Casa', desc: 'El sabor que nos hizo famosos', heat: 2, popular: true, color: '#5A0E12' },
+  { name: 'Original de la Casa', desc: 'El sabor que nos hizo famosos', heat: 2, popular: true, house: true, color: '#5A0E12' },
   { name: 'Red Hot', desc: 'Picante clásico, directo y sin rodeos', heat: 2, color: '#D62617' },
-  { name: 'Mango Habanero', desc: 'Tropical y picosa, una mezcla con experiencia', heat: 3, popular: true, color: '#E8842A' },
-  { name: 'Jalapeño Fogoso', desc: 'El mero mero sabor mexicano', heat: 3, color: '#D9631A' },
-  { name: 'Habanero Fogoso', desc: 'La de los valientes. Atrévete a probarla', heat: 3, popular: true, color: '#E3231D' },
+  { name: 'Mango Habanero', desc: 'Tropical y picosa, nuestra receta gourmet', heat: 3, popular: true, house: true, color: '#E8842A' },
+  { name: 'Jalapeño Fogoso', desc: 'El mero mero sabor mexicano', heat: 3, house: true, color: '#D9631A' },
+  { name: 'Habanero Fogoso', desc: 'La de los valientes. Atrévete a probarla', heat: 3, popular: true, house: true, color: '#E3231D' },
 ]
 
 // ─── BEBIDAS PREFERIDAS (todas las del menú original) ──────────────────────

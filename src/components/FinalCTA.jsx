@@ -16,7 +16,8 @@ export default function FinalCTA() {
               Haz volar tu <span className="text-fire-gradient">paladar</span>
             </h2>
             <p className="mt-5 text-lg text-ash">
-              Pide ahora por WhatsApp y disfruta el fuego del buen comer. Para llevar o a domicilio.
+              Elige entre 11 salsas —4 de ellas de la casa— y pide ahora por WhatsApp. Para llevar o a
+              domicilio.
             </p>
             <a
               href={waLink()}
