@@ -367,6 +367,24 @@
   .cart-pop, .rise-in, .swap-in { animation: none; }
 }
 
+/* ── Panel del personal (uso interno, #empleados) ──────────────────────────
+   El panel corre con un acento único —el naranja de fuego— porque es una
+   herramienta, no una portada: si el rojo y el dorado también fueran acentos,
+   el rojo dejaría de significar "algo va mal". El anillo de foco del sitio es
+   dorado; aquí se alinea al acento del panel. */
+.staff :focus-visible { outline-color: var(--color-fire); }
+
+/* La línea que se vacía bajo la barra de deshacer. No es adorno: es el tiempo
+   que queda para arrepentirse, dibujado. */
+@keyframes undoDrain { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+.undo-drain {
+  transform-origin: left;
+  animation: undoDrain var(--undo, 8000ms) linear forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .undo-drain { animation: none; transform: scaleX(1); }
+}
+
 /* Slow pulse for glow accents */
 @keyframes softPulse { 0%,100% { opacity: 0.55; } 50% { opacity: 1; } }
 .pulse-slow { animation: softPulse 4s ease-in-out infinite; }
