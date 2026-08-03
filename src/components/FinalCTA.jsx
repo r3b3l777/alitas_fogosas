@@ -2,10 +2,10 @@ import { Reveal, Icon, Embers } from './ui'
 
 export default function FinalCTA() {
   return (
-    <section className="relative overflow-hidden py-20 md:py-28">
+    <section className="relative overflow-hidden py-14 md:py-20">
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-b from-crimson-2/30 via-transparent to-transparent" />
       <div className="shell">
-        <Reveal className="ember-bg grain relative overflow-hidden rounded-[2.5rem] border border-hairline px-6 py-16 text-center md:px-16 md:py-20">
+        <Reveal className="ember-bg grain relative overflow-hidden rounded-[2.5rem] border border-hairline px-6 py-12 text-center md:px-16 md:py-14">
           <Embers count={18} />
           <div aria-hidden className="pointer-events-none absolute -left-10 top-0 h-64 w-64 rounded-full bg-fire/25 blur-[90px]" />
           <div aria-hidden className="pointer-events-none absolute -right-10 bottom-0 h-64 w-64 rounded-full bg-crimson/30 blur-[90px]" />

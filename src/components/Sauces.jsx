@@ -66,10 +66,10 @@ function SauceCard({ s, i }) {
 
 export default function Sauces() {
   return (
-    <section id="salsas" className="relative scroll-mt-20 py-20 md:py-28">
+    <section id="salsas" className="relative scroll-mt-20 py-14 md:py-20">
       <div aria-hidden className="pointer-events-none absolute right-0 top-1/3 h-72 w-72 rounded-full bg-magenta/10 blur-[100px]" />
       <div className="shell relative">
-        <Reveal className="mx-auto mb-12 max-w-2xl text-center">
+        <Reveal className="mx-auto mb-9 max-w-2xl text-center">
           {/* El número grande es el catálogo completo; la insignia dorada es el
               argumento. Encabezar con "4 de la casa" hacía parecer que hay
               pocas — son once. */}
@@ -101,7 +101,7 @@ export default function Sauces() {
           ))}
         </div>
 
-        <Reveal className="mb-4 mt-12 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <Reveal className="mb-4 mt-10 flex flex-wrap items-baseline gap-x-3 gap-y-1">
           <h3 className="font-display text-2xl text-cream">Y otras {rest.length} para elegir</h3>
           <p className="text-sm text-ash-dim">Las de siempre, igual de bien hechas.</p>
         </Reveal>

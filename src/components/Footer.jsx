@@ -11,7 +11,7 @@ const nav = [
 export default function Footer() {
   return (
     <footer className="edge-top relative z-10">
-      <div className="shell py-14">
+      <div className="shell py-10">
         <div className="flex flex-col gap-10 md:flex-row md:justify-between">
           <div className="max-w-sm">
             <a href="#top" className="text-crimson" aria-label="Alitas Fogosas — inicio">

@@ -30,9 +30,9 @@ function CategoryCard({ c, delay = 0 }) {
 
 export default function Categories() {
   return (
-    <section className="relative py-20 md:py-28">
+    <section className="relative py-14 md:py-20">
       <div className="shell">
-        <Reveal className="mx-auto mb-12 max-w-2xl text-center">
+        <Reveal className="mx-auto mb-9 max-w-2xl text-center">
           <p className="kicker justify-center">Nuestra carta</p>
           <h2 className="mt-4 text-[clamp(2.25rem,6vw,4rem)] text-cream">
             Hay para <span className="text-fire-gradient">todos</span>

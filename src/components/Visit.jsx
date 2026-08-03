@@ -43,7 +43,10 @@ function BranchCard({ b, i }) {
         </div>
       </div>
 
-      <div className="relative mt-6 flex flex-wrap gap-2.5">
+      {/* `mt-auto`: las tarjetas miden distinto (las direcciones no tienen el
+          mismo largo) y sin esto los botones quedaban a distinta altura en cada
+          columna. Pegados abajo, los tres "Pedir aquí" caen en la misma línea. */}
+      <div className="relative mt-auto flex flex-wrap gap-2.5 pt-6">
         <a
           href={b.mapsUrl}
           target="_blank"
@@ -77,9 +80,9 @@ function BranchCard({ b, i }) {
 
 export default function Visit() {
   return (
-    <section id="visita" className="edge-top relative scroll-mt-20 bg-ink-2/72 py-20 md:py-28">
+    <section id="visita" className="edge-top relative scroll-mt-20 bg-ink-2/72 py-14 md:py-20">
       <div className="shell">
-        <Reveal className="mx-auto mb-12 max-w-2xl text-center">
+        <Reveal className="mx-auto mb-9 max-w-2xl text-center">
           <p className="kicker justify-center">Nuestras sucursales</p>
           <h2 className="mt-4 text-[clamp(2.25rem,6vw,4rem)] text-cream">
             Te esperamos con el <span className="text-fire-gradient">comal caliente</span>
@@ -90,7 +93,12 @@ export default function Visit() {
           </p>
         </Reveal>
 
-        <div className="grid gap-5 md:grid-cols-2">
+        {/* Son TRES sucursales, y con tres tarjetas una rejilla de dos columnas
+            siempre deja a la última sola con medio renglón vacío al lado. En
+            escritorio van las tres a la par y el hueco desaparece; la rejilla
+            de dos se queda para la banda de tablet, donde tres no caben sin
+            apretar la dirección. */}
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {branches.map((b, i) => (
             <BranchCard key={b.name} b={b} i={i} />
           ))}

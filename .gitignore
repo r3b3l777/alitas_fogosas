@@ -9,3 +9,6 @@ dist-ssr
 .env
 .env.local
 .env.*.local
+
+# Reportes de auditoría generados por herramientas — no son parte del sitio
+motion-audits/

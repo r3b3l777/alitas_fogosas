@@ -4,7 +4,7 @@ import { img } from '../data'
 export default function Cinematic() {
   const bgRef = useParallax(0.22)
   return (
-    <section className="relative flex min-h-[80dvh] items-center justify-center overflow-hidden md:min-h-[90dvh]">
+    <section className="relative flex min-h-[52dvh] items-center justify-center overflow-hidden md:min-h-[62dvh]">
       {/* Parallax image layer (oversized so translate never reveals edges) */}
       <div ref={bgRef} className="absolute inset-x-0 -top-[12%] h-[124%]">
         <img

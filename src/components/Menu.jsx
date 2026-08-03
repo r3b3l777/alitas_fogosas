@@ -326,7 +326,7 @@ export default function Menu() {
   const onlyBranch = group.onlyBranch ? branches.find((b) => b.slug === group.onlyBranch) : null
 
   return (
-    <section id="menu" className="edge-top relative scroll-mt-20 bg-ink-2/72 py-20 md:py-28">
+    <section id="menu" className="edge-top relative scroll-mt-20 bg-ink-2/72 py-14 md:py-20">
       <div className="shell">
         <Reveal className="mb-10 flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
           <div className="max-w-xl">

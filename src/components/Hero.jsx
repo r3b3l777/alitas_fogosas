@@ -11,7 +11,14 @@ export default function Hero() {
       <div aria-hidden className="pointer-events-none absolute -left-24 top-24 h-72 w-72 rounded-full bg-fire/20 blur-[90px]" />
       <div aria-hidden className="pointer-events-none absolute -right-16 bottom-0 h-80 w-80 rounded-full bg-crimson/25 blur-[100px]" />
 
-      <div className="shell relative grid items-center gap-10 py-14 md:min-h-[calc(100dvh-68px)] md:grid-cols-2 md:gap-6 md:py-8">
+      {/* En móvil el aire de arriba se cuenta DOS veces: la sección ya reserva
+          los 68 px de la barra fija con `pt-[68px]`, y encima este bloque metía
+          otros 56 px de `py-14`. Eran 124 px de nada antes del primer renglón,
+          casi un quinto de la pantalla. Arriba basta con un respiro corto —el
+          hueco de la barra ya separa—; abajo sí se conserva, que ahí no hay
+          nada que separe del siguiente bloque. En escritorio no aplica: el
+          hero se centra dentro de `min-h` y el padding casi no participa. */}
+      <div className="shell relative grid items-center gap-8 pb-12 pt-4 md:min-h-[calc(100dvh-68px)] md:grid-cols-2 md:gap-6 md:py-8">
         {/* Copy — centrado en móvil, alineado a la izquierda en desktop */}
         <div className="relative z-10 mx-auto max-w-xl text-center md:mx-0 md:text-left">
           <p className="kicker mb-5 load-in">

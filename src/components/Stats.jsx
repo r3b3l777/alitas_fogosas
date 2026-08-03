@@ -22,7 +22,7 @@ function Stat({ s }) {
 
 export default function Stats() {
   return (
-    <section className="relative py-16 md:py-20">
+    <section className="relative py-10 md:py-12">
       <div className="shell">
         <Reveal className="grid grid-cols-2 gap-y-10 gap-x-6 md:grid-cols-4">
           {stats.map((s) => (

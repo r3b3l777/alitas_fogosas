@@ -3,9 +3,9 @@ import { drinks } from '../data'
 
 export default function Drinks() {
   return (
-    <section id="bebidas" className="edge-top relative scroll-mt-20 bg-ink-2/72 py-20 md:py-28">
+    <section id="bebidas" className="edge-top relative scroll-mt-20 bg-ink-2/72 py-14 md:py-20">
       <div className="shell">
-        <Reveal className="mb-12 max-w-2xl">
+        <Reveal className="mb-9 max-w-2xl">
           <p className="kicker">Bebidas preferidas</p>
           <h2 className="mt-4 text-[clamp(2.25rem,6vw,4rem)] text-cream">
             Bebidas que <span className="text-fire-gradient">refrescan</span> el fuego
